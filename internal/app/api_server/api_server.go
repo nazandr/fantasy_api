@@ -27,7 +27,6 @@ func New(config *Config) *APIServer {
 		config: config,
 		logger: logrus.New(),
 		router: mux.NewRouter(),
-		store:  config.Store.New(),
 	}
 }
 
@@ -37,6 +36,9 @@ func (s *APIServer) Start() error {
 	}
 
 	s.routerConfig()
+	if err := s.storeConfig(); err != nil {
+		return err
+	}
 	s.logger.Info("api server started")
 
 	return http.ListenAndServe(s.config.IP_addr, s.router)
@@ -50,6 +52,18 @@ func (s *APIServer) loggerConfig() error {
 
 	s.logger.SetLevel(lvl)
 
+	return nil
+}
+
+func (s *APIServer) storeConfig() error {
+	st := store.New(s.config.Store)
+
+	if err := st.Connect(); err != nil {
+		return err
+	}
+	s.store = st
+
+	s.logger.Info("Connected to DB")
 	return nil
 }
 
