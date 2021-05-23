@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/nazandr/fantasy_api/internal/app/store"
 	"github.com/sirupsen/logrus"
 )
 
@@ -12,11 +13,13 @@ type APIServer struct {
 	config *Config
 	logger *logrus.Logger
 	router *mux.Router
+	store  *store.Store
 }
 
 type Config struct {
-	IP_addr string
-	Log_lvl string
+	IP_addr string `toml:"ip_addr"`
+	Log_lvl string `toml:"log_lvl"`
+	Store   *store.Config
 }
 
 func New(config *Config) *APIServer {
@@ -24,6 +27,7 @@ func New(config *Config) *APIServer {
 		config: config,
 		logger: logrus.New(),
 		router: mux.NewRouter(),
+		store:  config.Store.New(),
 	}
 }
 
