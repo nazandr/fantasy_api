@@ -7,14 +7,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Config struct {
-	dbURL string `toml:"database_url"`
-}
-
-func NewConfig() *Config {
-	return &Config{}
-}
-
 type Store struct {
 	config  *Config
 	context context.Context
@@ -29,7 +21,7 @@ func New(c *Config) *Store {
 }
 
 func (s *Store) Connect() error {
-	clientOptions := options.Client().ApplyURI(s.config.dbURL)
+	clientOptions := options.Client().ApplyURI(s.config.Database_url)
 	client, err := mongo.Connect(s.context, clientOptions)
 	if err != nil {
 		return err
@@ -40,6 +32,7 @@ func (s *Store) Connect() error {
 		return err
 	}
 
+	s.db = client
 	return nil
 }
 

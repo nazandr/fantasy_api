@@ -6,7 +6,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/nazandr/fantasy_api/internal/app/api_server"
-	"github.com/nazandr/fantasy_api/internal/app/store"
 )
 
 var (
@@ -20,17 +19,13 @@ func init() {
 func main() {
 	flag.Parse()
 
-	config := &api_server.Config{
-		IP_addr: ":8080",
-		Log_lvl: "debug",
-		Store:   &store.Config{},
-	}
+	config := api_server.NewConfig()
 
 	_, err := toml.DecodeFile(configPath, config)
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	log.Println(config.Store)
 	server := api_server.New(config)
 
 	if err := server.Start(); err != nil {

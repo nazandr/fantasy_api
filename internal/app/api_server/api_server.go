@@ -16,12 +16,6 @@ type APIServer struct {
 	store  *store.Store
 }
 
-type Config struct {
-	IP_addr string `toml:"ip_addr"`
-	Log_lvl string `toml:"log_lvl"`
-	Store   *store.Config
-}
-
 func New(config *Config) *APIServer {
 	return &APIServer{
 		config: config,
