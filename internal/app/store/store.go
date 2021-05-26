@@ -8,9 +8,10 @@ import (
 )
 
 type Store struct {
-	config  *Config
-	context context.Context
-	db      *mongo.Client
+	config         *Config
+	context        context.Context
+	db             *mongo.Database
+	userCollection *UserCollection
 }
 
 func New(c *Config) *Store {
@@ -32,10 +33,22 @@ func (s *Store) Connect() error {
 		return err
 	}
 
-	s.db = client
+	s.db = client.Database("fantacy")
 	return nil
 }
 
 func (s *Store) Close() {
-	s.db.Disconnect(s.context)
+	s.db.Client().Disconnect(s.context)
+}
+
+func (s *Store) User() *UserCollection {
+	if s.userCollection != nil {
+		return s.userCollection
+	}
+
+	s.userCollection = &UserCollection{
+		Store:      s,
+		Collection: s.db.Collection("users"),
+	}
+	return s.userCollection
 }
