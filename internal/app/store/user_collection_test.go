@@ -14,9 +14,7 @@ func TestUser_collection_Create(t *testing.T) {
 
 	defer teardown(s.User().Collection)
 
-	u, err := s.User().Create(&models.User{
-		Email: "user@example.com",
-	})
+	u, err := s.User().Create(models.TestUser(t))
 
 	assert.NoError(t, err)
 	assert.NotNil(t, u)
@@ -28,15 +26,13 @@ func TestUser_collection_FindByEmail(t *testing.T) {
 
 	defer teardown(s.User().Collection)
 
-	email := "user@example.com"
-	_, err := s.User().FindByEmail(email)
+	u := models.TestUser(t)
+	_, err := s.User().FindByEmail(u.Email)
 	assert.Error(t, err)
 
-	s.User().Create(&models.User{
-		Email: email,
-	})
+	s.User().Create(u)
 
-	u, err := s.User().FindByEmail(email)
+	u, err = s.User().FindByEmail(u.Email)
 	assert.NoError(t, err)
 	assert.NotNil(t, u)
 }

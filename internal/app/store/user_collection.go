@@ -13,8 +13,14 @@ type UserCollection struct {
 }
 
 func (c *UserCollection) Create(u *models.User) (*models.User, error) {
-	u.ID = primitive.NewObjectID()
-	if _, err := c.Collection.InsertOne(c.Store.context, u); err != nil {
+	if err := u.BeforeCreate(); err != nil {
+		return nil, err
+	}
+
+	if _, err := c.Collection.InsertOne(c.Store.context, bson.D{
+		{Key: "email", Value: u.Email},
+		{Key: "encripted_password", Value: u.EncriptedPassword},
+	}); err != nil {
 		return nil, err
 	}
 
