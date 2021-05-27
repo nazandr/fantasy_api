@@ -14,7 +14,8 @@ func TestUser_collection_Create(t *testing.T) {
 
 	defer teardown(s.User().Collection)
 
-	u, err := s.User().Create(models.TestUser(t))
+	u := models.TestUser(t)
+	err := s.User().Create(u)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, u)

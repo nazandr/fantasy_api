@@ -12,19 +12,23 @@ type UserCollection struct {
 	Collection *mongo.Collection
 }
 
-func (c *UserCollection) Create(u *models.User) (*models.User, error) {
+func (c *UserCollection) Create(u *models.User) error {
+	if err := u.Validate(); err != nil {
+		return err
+	}
+
 	if err := u.BeforeCreate(); err != nil {
-		return nil, err
+		return err
 	}
 
 	if _, err := c.Collection.InsertOne(c.Store.context, bson.D{
 		{Key: "email", Value: u.Email},
 		{Key: "encripted_password", Value: u.EncriptedPassword},
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
-	return u, nil
+	return nil
 }
 
 func (c *UserCollection) FindByEmail(email string) (*models.User, error) {

@@ -4,7 +4,9 @@ go 1.16
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/aws/aws-sdk-go v1.38.47 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
+	github.com/aws/aws-sdk-go v1.38.50 // indirect
+	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
 	github.com/gorilla/mux v1.8.0
 	github.com/klauspost/compress v1.12.3 // indirect
 	github.com/sirupsen/logrus v1.8.1
