@@ -33,12 +33,15 @@ func (s *Store) Connect() error {
 		return err
 	}
 
-	s.db = client.Database("fantacy")
+	s.db = client.Database(s.config.DbName)
 	return nil
 }
 
 func (s *Store) Close() {
 	s.db.Client().Disconnect(s.context)
+}
+func (s *Store) DropDb() {
+	s.db.Drop(s.context)
 }
 
 func (s *Store) User() *UserCollection {

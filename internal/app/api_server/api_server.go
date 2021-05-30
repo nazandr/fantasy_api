@@ -1,7 +1,6 @@
 package api_server
 
 import (
-	"io"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -17,11 +16,17 @@ type APIServer struct {
 }
 
 func New(config *Config) *APIServer {
-	return &APIServer{
+	s := &APIServer{
 		config: config,
 		logger: logrus.New(),
 		router: mux.NewRouter(),
 	}
+	s.configureRouter()
+	return s
+}
+
+func (s *APIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.router.ServeHTTP(w, r)
 }
 
 func (s *APIServer) Start() error {
@@ -29,7 +34,6 @@ func (s *APIServer) Start() error {
 		return err
 	}
 
-	s.routerConfig()
 	if err := s.storeConfig(); err != nil {
 		return err
 	}
@@ -59,12 +63,4 @@ func (s *APIServer) storeConfig() error {
 
 	s.logger.Info("Connected to DB")
 	return nil
-}
-
-func (s *APIServer) routerConfig() {
-	s.router.HandleFunc("/players", s.handlePlayerData).Methods("GET")
-}
-
-func (s *APIServer) handlePlayerData(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "players[]")
 }

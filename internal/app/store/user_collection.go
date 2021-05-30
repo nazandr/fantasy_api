@@ -1,6 +1,8 @@
 package store
 
 import (
+	"errors"
+
 	"github.com/nazandr/fantasy_api/internal/app/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -12,6 +14,10 @@ type UserCollection struct {
 	Collection *mongo.Collection
 }
 
+var (
+	ErrUserAllreadyExist = errors.New("User allready exist")
+)
+
 func (c *UserCollection) Create(u *models.User) error {
 	if err := u.Validate(); err != nil {
 		return err
@@ -21,13 +27,20 @@ func (c *UserCollection) Create(u *models.User) error {
 		return err
 	}
 
-	if _, err := c.Collection.InsertOne(c.Store.context, bson.D{
+	if _, err := c.FindByEmail(u.Email); err != mongo.ErrNoDocuments {
+		return ErrUserAllreadyExist
+	}
+
+	res, err := c.Collection.InsertOne(c.Store.context, bson.D{
 		{Key: "email", Value: u.Email},
 		{Key: "encripted_password", Value: u.EncriptedPassword},
-	}); err != nil {
+	})
+
+	if err != nil {
 		return err
 	}
 
+	u.ID = res.InsertedID.(primitive.ObjectID)
 	return nil
 }
 

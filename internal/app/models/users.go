@@ -8,10 +8,10 @@ import (
 )
 
 type User struct {
-	ID                primitive.ObjectID `bson:"_id"`
-	Email             string             `bson:"email"`
-	Password          string
-	EncriptedPassword string `bson:"encripted_password"`
+	ID                primitive.ObjectID `bson:"_id" json:"id"`
+	Email             string             `bson:"email" json:"email"`
+	Password          string             `json:"password,omitempty"`
+	EncriptedPassword string             `bson:"encripted_password" json:"-"`
 }
 
 func (u *User) Validate() error {
@@ -29,6 +29,10 @@ func (u *User) BeforeCreate() error {
 		u.EncriptedPassword = encript
 	}
 	return nil
+}
+
+func (u *User) Sanitaze() {
+	u.Password = ""
 }
 
 func encriptPassword(s string) (string, error) {
