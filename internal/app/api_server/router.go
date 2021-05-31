@@ -2,17 +2,23 @@ package api_server
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/nazandr/fantasy_api/internal/app/models"
 	"github.com/nazandr/fantasy_api/internal/app/store"
 )
 
+var (
+	errIncorectEmailOrPassword = errors.New("incorect email or password")
+)
+
 func (s *APIServer) configureRouter() {
-	s.router.HandleFunc("/singup", s.handleUserCreate()).Methods("POST")
+	s.router.HandleFunc("/singup", s.handleSingUp()).Methods("POST")
+	s.router.HandleFunc("/singin", s.handelSingIn()).Methods("POST")
 }
 
-func (s *APIServer) handleUserCreate() http.HandlerFunc {
+func (s *APIServer) handleSingUp() http.HandlerFunc {
 	type request struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -40,6 +46,30 @@ func (s *APIServer) handleUserCreate() http.HandlerFunc {
 
 		u.Sanitaze()
 		s.respond(w, r, http.StatusCreated, u)
+	}
+}
+
+func (s *APIServer) handelSingIn() http.HandlerFunc {
+	type request struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := &request{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		u, err := s.store.User().FindByEmail(req.Email)
+		if err != nil || !u.ComparePassword(req.Password) {
+			s.error(w, r, http.StatusUnauthorized, errIncorectEmailOrPassword)
+			return
+		}
+		token := NewToken()
+		token.Auth(u.ID, s.config)
+
+		s.respond(w, r, http.StatusOK, token)
 	}
 }
 

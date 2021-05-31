@@ -10,7 +10,7 @@ import (
 func TestUser_BeforeCreate(t *testing.T) {
 	u := models.TestUser(t)
 	assert.NoError(t, u.BeforeCreate())
-	assert.NotEmpty(t, u.EncriptedPassword)
+	assert.NotEmpty(t, u.EncryptedPassword)
 }
 
 func TestUser_Validate(t *testing.T) {
@@ -49,7 +49,7 @@ func TestUser_Validate(t *testing.T) {
 			u: func() *models.User {
 				u := models.TestUser(t)
 				u.Password = ""
-				u.EncriptedPassword = "encriptedpassword"
+				u.EncryptedPassword = "encriptedpassword"
 				return u
 			},
 			isValid: true,

@@ -11,13 +11,13 @@ type User struct {
 	ID                primitive.ObjectID `bson:"_id" json:"id"`
 	Email             string             `bson:"email" json:"email"`
 	Password          string             `json:"password,omitempty"`
-	EncriptedPassword string             `bson:"encripted_password" json:"-"`
+	EncryptedPassword string             `bson:"encripted_password" json:"-"`
 }
 
 func (u *User) Validate() error {
 	return validation.ValidateStruct(u,
 		validation.Field(&u.Email, validation.Required, is.Email),
-		validation.Field(&u.Password, validation.By(RequiredIf(u.EncriptedPassword == "")), validation.Length(6, 100)))
+		validation.Field(&u.Password, validation.By(RequiredIf(u.EncryptedPassword == "")), validation.Length(6, 100)))
 }
 
 func (u *User) BeforeCreate() error {
@@ -26,13 +26,17 @@ func (u *User) BeforeCreate() error {
 		if err != nil {
 			return err
 		}
-		u.EncriptedPassword = encript
+		u.EncryptedPassword = encript
 	}
 	return nil
 }
 
 func (u *User) Sanitaze() {
 	u.Password = ""
+}
+
+func (u *User) ComparePassword(password string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(u.EncryptedPassword), []byte(password)) == nil
 }
 
 func encriptPassword(s string) (string, error) {

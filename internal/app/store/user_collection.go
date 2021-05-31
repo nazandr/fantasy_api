@@ -33,7 +33,7 @@ func (c *UserCollection) Create(u *models.User) error {
 
 	res, err := c.Collection.InsertOne(c.Store.context, bson.D{
 		{Key: "email", Value: u.Email},
-		{Key: "encripted_password", Value: u.EncriptedPassword},
+		{Key: "encripted_password", Value: u.EncryptedPassword},
 	})
 
 	if err != nil {
