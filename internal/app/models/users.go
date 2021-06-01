@@ -12,6 +12,7 @@ type User struct {
 	Email             string             `bson:"email" json:"email"`
 	Password          string             `json:"password,omitempty"`
 	EncryptedPassword string             `bson:"encripted_password" json:"-"`
+	RefreshToken      string             `bson:"refresh_token" json:"resresh_token"`
 }
 
 func (u *User) Validate() error {

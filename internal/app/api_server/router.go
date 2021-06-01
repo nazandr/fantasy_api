@@ -68,7 +68,9 @@ func (s *APIServer) handelSingIn() http.HandlerFunc {
 		}
 		token := NewToken()
 		token.Auth(u.ID, s.config)
-
+		if err := s.store.User().UpdateRefreshToken(u.ID, token.RefreshToken, s.config.RefreshTokenExp); err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+		}
 		s.respond(w, r, http.StatusOK, token)
 	}
 }
