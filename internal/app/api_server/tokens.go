@@ -26,7 +26,7 @@ func NewToken() *Token {
 func (t *Token) NewJWT(id primitive.ObjectID, conf *Config) error {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(time.Minute * time.Duration(conf.AcssesTokenExp)).Unix(),
-		Subject:   id.String(),
+		Subject:   id.Hex(),
 	})
 	at, err := token.SignedString([]byte(conf.SignatureKey))
 	if err != nil {
@@ -39,15 +39,15 @@ func (t *Token) NewJWT(id primitive.ObjectID, conf *Config) error {
 
 func (t *Token) NewRefreshToken() error {
 	b := make([]byte, 32)
+
 	s := rand.NewSource(time.Now().Unix())
 	r := rand.New(s)
 
-	_, err := r.Read(b)
-	if err != nil {
+	if _, err := r.Read(b); err != nil {
 		return err
 	}
 
-	t.RefreshToken = string(b)
+	t.RefreshToken = fmt.Sprintf("%x", b)
 	return nil
 }
 
@@ -63,7 +63,7 @@ func (t *Token) Auth(id primitive.ObjectID, conf *Config) error {
 	return nil
 }
 
-func (t *Token) ParseJWT(conf *Config) (string, error) {
+func (t *Token) ParseJWT(conf *Config) (primitive.ObjectID, error) {
 	token, err := jwt.Parse(t.AcssesToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -71,14 +71,19 @@ func (t *Token) ParseJWT(conf *Config) (string, error) {
 		return []byte(conf.SignatureKey), nil
 	})
 	if err != nil || !token.Valid {
-		return "", err
+		return primitive.NilObjectID, err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok {
-		return "", fmt.Errorf("error get user claims from token")
+		return primitive.NilObjectID, fmt.Errorf("error get user claims from token")
 	}
 
-	return claims["sub"].(string), nil
+	id, err := primitive.ObjectIDFromHex(claims["sub"].(string))
+	if err != nil {
+		return id, err
+	}
+
+	return id, nil
 }

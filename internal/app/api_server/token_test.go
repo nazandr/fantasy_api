@@ -3,12 +3,24 @@ package api_server
 import (
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestToken_ParseJWT(t *testing.T) {
+	conf := NewConfig()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+		ExpiresAt: time.Now().AddDate(0, -1, 0).Unix(),
+		Subject:   "1",
+	})
+	expToken, err := token.SignedString([]byte(conf.SignatureKey))
+	if err != nil {
+		assert.NoError(t, err)
+	}
+
 	testCases := []struct {
 		name     string
 		jwtToken string
@@ -16,7 +28,7 @@ func TestToken_ParseJWT(t *testing.T) {
 	}{
 		{
 			name:     "expired",
-			jwtToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MjI0OTU0NDMsInN1YiI6Ik9iamVjdElEKFwiNjBiM2U0Y2QyMTYzNjhiNjY4OGI3NWU3XCIpIn0.nZ_jDsAAIxnQJnQlkvzOU-CvA6w_cFN31tHG0uV51Qo",
+			jwtToken: expToken,
 			err:      fmt.Errorf(""),
 		},
 		{
@@ -27,13 +39,15 @@ func TestToken_ParseJWT(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			newId := primitive.NewObjectID()
 			token := NewToken()
 			token.AcssesToken = tc.jwtToken
 			if tc.name == "new" {
-				token.NewJWT(primitive.NewObjectID(), NewConfig())
+				token.NewJWT(newId, NewConfig())
 			}
-			_, err := token.ParseJWT(NewConfig())
+			id, err := token.ParseJWT(NewConfig())
 			if tc.name == "new" {
+				assert.Equal(t, newId, id)
 				assert.Nil(t, err)
 				return
 			}

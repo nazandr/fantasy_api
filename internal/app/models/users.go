@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -12,7 +14,12 @@ type User struct {
 	Email             string             `bson:"email" json:"email"`
 	Password          string             `json:"password,omitempty"`
 	EncryptedPassword string             `bson:"encripted_password" json:"-"`
-	RefreshToken      string             `bson:"refresh_token" json:"resresh_token"`
+	Session           session
+}
+
+type session struct {
+	Refresh_token string    `bson:"refresh_token" json:"resresh_token"`
+	Expires_at    time.Time `bson:"expires_at"`
 }
 
 func (u *User) Validate() error {

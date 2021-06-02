@@ -1,10 +1,20 @@
 package models
 
-import "testing"
+import (
+	"testing"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 func TestUser(t *testing.T) *User {
 	return &User{
+		ID:       primitive.NewObjectID(),
 		Email:    "user@example.com",
 		Password: "password",
+		Session: session{
+			Refresh_token: "refresh token",
+			Expires_at:    time.Now(),
+		},
 	}
 }

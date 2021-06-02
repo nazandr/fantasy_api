@@ -11,6 +11,48 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestRouter_authenticateUser(t *testing.T) {
+	s := TestServer(t)
+	defer s.store.DropDb()
+
+	u := models.TestUser(t)
+	s.store.User().Create(u)
+
+	conf := NewConfig()
+	newToken := NewToken()
+	newToken.Auth(u.ID, conf)
+	s.store.User().UpdateRefreshToken(u.ID, newToken.RefreshToken, conf.RefreshTokenExp)
+
+	testCases := []struct {
+		name         string
+		tokenValue   map[interface{}]interface{}
+		expectedCode int
+	}{
+		{
+			name: "authenticated",
+			tokenValue: map[interface{}]interface{}{
+				"token": newToken,
+			},
+			expectedCode: http.StatusOK,
+		},
+	}
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			rec := httptest.NewRecorder()
+			b := &bytes.Buffer{}
+			json.NewEncoder(b).Encode(tc.tokenValue["token"])
+			req, err := http.NewRequest(http.MethodGet, "/", b)
+			assert.NoError(t, err)
+			s.authenticateUser(handler).ServeHTTP(rec, req)
+			assert.Equal(t, tc.expectedCode, rec.Code)
+		})
+	}
+}
+
 func TestRouter_handleSingUp(t *testing.T) {
 	s := TestServer(t)
 	defer s.store.DropDb()
@@ -68,8 +110,8 @@ func TestRouter_handleSingUp(t *testing.T) {
 func TestRouter_handleSingIn(t *testing.T) {
 	s := TestServer(t)
 	u := models.TestUser(t)
-	s.store.User().Create(u)
 	defer s.store.DropDb()
+
 	testCases := []struct {
 		name         string
 		payload      interface{}
@@ -105,7 +147,7 @@ func TestRouter_handleSingIn(t *testing.T) {
 			expectedCode: http.StatusUnauthorized,
 		},
 	}
-
+	s.store.User().Create(u)
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rec := httptest.NewRecorder()
@@ -113,7 +155,7 @@ func TestRouter_handleSingIn(t *testing.T) {
 			json.NewEncoder(b).Encode(tc.payload)
 			req, err := http.NewRequest(http.MethodPost, "/singin", b)
 			if err != nil {
-				t.Fatal(err)
+				assert.NoError(t, err)
 			}
 			s.ServeHTTP(rec, req)
 			assert.Equal(t, tc.expectedCode, rec.Code)

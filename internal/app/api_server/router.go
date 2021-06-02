@@ -1,6 +1,7 @@
 package api_server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -9,13 +10,45 @@ import (
 	"github.com/nazandr/fantasy_api/internal/app/store"
 )
 
+const (
+	cxtKeyUser cxtKey = iota
+)
+
 var (
 	errIncorectEmailOrPassword = errors.New("incorect email or password")
+	errExpiredRefreshToken     = errors.New("expired refresh token")
 )
+
+type cxtKey int
 
 func (s *APIServer) configureRouter() {
 	s.router.HandleFunc("/singup", s.handleSingUp()).Methods("POST")
 	s.router.HandleFunc("/singin", s.handelSingIn()).Methods("POST")
+}
+
+func (s *APIServer) authenticateUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := NewToken()
+		if err := json.NewDecoder(r.Body).Decode(token); err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+		id, err := token.ParseJWT(s.config)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		u, err := s.store.User().Find(id)
+		if err != nil {
+			s.error(w, r, http.StatusForbidden, err)
+			return
+		}
+		if u.Session.Refresh_token != token.RefreshToken {
+			s.error(w, r, http.StatusUnauthorized, errExpiredRefreshToken)
+		}
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), cxtKeyUser, u)))
+	})
 }
 
 func (s *APIServer) handleSingUp() http.HandlerFunc {
@@ -62,7 +95,11 @@ func (s *APIServer) handelSingIn() http.HandlerFunc {
 		}
 
 		u, err := s.store.User().FindByEmail(req.Email)
-		if err != nil || !u.ComparePassword(req.Password) {
+		if err != nil {
+			s.error(w, r, http.StatusUnauthorized, errIncorectEmailOrPassword)
+			return
+		}
+		if !u.ComparePassword(req.Password) {
 			s.error(w, r, http.StatusUnauthorized, errIncorectEmailOrPassword)
 			return
 		}

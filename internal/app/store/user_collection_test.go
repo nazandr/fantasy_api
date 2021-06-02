@@ -38,6 +38,21 @@ func TestUser_collection_FindByEmail(t *testing.T) {
 	assert.NotNil(t, u)
 }
 
+func TestUser_collection_Find(t *testing.T) {
+	s, teardown := store.TestStore(t, database_url)
+	s.User().Collection = s.User().Collection.Database().Collection("user_test")
+
+	defer teardown(s.User().Collection)
+
+	u := models.TestUser(t)
+
+	s.User().Create(u)
+
+	fu, err := s.User().Find(u.ID)
+	assert.NoError(t, err)
+	assert.NotNil(t, fu)
+}
+
 func TestUser_collection_UpdateRefreshToekn(t *testing.T) {
 	s, teardown := store.TestStore(t, database_url)
 	s.User().Collection = s.User().Collection.Database().Collection("user_test")

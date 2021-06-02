@@ -32,10 +32,9 @@ func (c *UserCollection) Create(u *models.User) error {
 		return ErrUserAllreadyExist
 	}
 
-	res, err := c.Collection.InsertOne(c.Store.context, bson.D{
-		{Key: "email", Value: u.Email},
-		{Key: "encripted_password", Value: u.EncryptedPassword},
-	})
+	u.Sanitaze()
+
+	res, err := c.Collection.InsertOne(c.Store.context, u)
 
 	if err != nil {
 		return err
@@ -51,6 +50,21 @@ func (c *UserCollection) FindByEmail(email string) (*models.User, error) {
 	filter := bson.D{primitive.E{
 		Key:   "email",
 		Value: email,
+	}}
+
+	if err := c.Collection.FindOne(c.Store.context, filter).Decode(&u); err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
+
+func (c *UserCollection) Find(id primitive.ObjectID) (*models.User, error) {
+	u := &models.User{}
+
+	filter := bson.D{primitive.E{
+		Key:   "_id",
+		Value: id,
 	}}
 
 	if err := c.Collection.FindOne(c.Store.context, filter).Decode(&u); err != nil {
