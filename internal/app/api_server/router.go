@@ -1,9 +1,11 @@
 package api_server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -64,8 +66,13 @@ func (s *APIServer) loggerReq(next http.Handler) http.Handler {
 }
 func (s *APIServer) authenticateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
 		token := NewToken()
-		if err := json.NewDecoder(r.Body).Decode(token); err != nil {
+		if err := json.NewDecoder(bytes.NewReader(b)).Decode(token); err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
@@ -83,6 +90,8 @@ func (s *APIServer) authenticateUser(next http.Handler) http.Handler {
 		if u.Session.Refresh_token != token.RefreshToken {
 			s.error(w, r, http.StatusUnauthorized, errExpiredRefreshToken)
 		}
+
+		r.Body = ioutil.NopCloser(bytes.NewReader(b))
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), cxtKeyUser, u)))
 	})
 }
@@ -125,6 +134,7 @@ func (s *APIServer) handelSingIn() http.HandlerFunc {
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := &request{}
+
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return

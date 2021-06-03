@@ -189,10 +189,20 @@ func TestRouter_addCardsPacks(t *testing.T) {
 		{
 			name: "invalid type",
 			payload: map[string]interface{}{
-				"Common":  "invalid",
-				"Special": 1,
+				"common":  "invalid",
+				"special": 1,
 			},
 			expectedCode: http.StatusBadRequest,
+		},
+		{
+			name: "multiple",
+			payload: map[string]interface{}{
+				"acsses_token":  "token",
+				"refresh_token": "token",
+				"common":        1,
+				"special":       1,
+			},
+			expectedCode: http.StatusOK,
 		},
 	}
 	s.store.User().Create(u)
