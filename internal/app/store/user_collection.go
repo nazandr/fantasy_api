@@ -74,6 +74,16 @@ func (c *UserCollection) Find(id primitive.ObjectID) (*models.User, error) {
 	return u, nil
 }
 
+func (c *UserCollection) ReplaseUser(u *models.User) error {
+	filter := bson.M{"_id": u.ID}
+	_, err := c.Collection.ReplaceOne(c.Store.context, filter, u)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *UserCollection) UpdateRefreshToken(id primitive.ObjectID, rt string, exp int) error {
 	_, err := c.Collection.UpdateByID(
 		c.Store.context,

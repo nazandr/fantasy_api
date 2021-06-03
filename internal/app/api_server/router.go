@@ -33,6 +33,7 @@ func (s *APIServer) configureRouter() {
 
 	auth := s.router.PathPrefix("/auth").Subrouter()
 	auth.Use(s.authenticateUser)
+	auth.HandleFunc("/addCardsPack", s.addCardsPacks()).Methods("POST")
 }
 
 func (s *APIServer) setRequestId(next http.Handler) http.Handler {
@@ -76,7 +77,7 @@ func (s *APIServer) authenticateUser(next http.Handler) http.Handler {
 
 		u, err := s.store.User().Find(id)
 		if err != nil {
-			s.error(w, r, http.StatusForbidden, err)
+			s.error(w, r, http.StatusUnauthorized, err)
 			return
 		}
 		if u.Session.Refresh_token != token.RefreshToken {
@@ -144,6 +145,27 @@ func (s *APIServer) handelSingIn() http.HandlerFunc {
 			s.error(w, r, http.StatusInternalServerError, err)
 		}
 		s.respond(w, r, http.StatusOK, token)
+	}
+}
+
+func (s *APIServer) addCardsPacks() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := &models.Packs{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		u := r.Context().Value(cxtKeyUser).(*models.User)
+
+		u.Packs.Common += req.Common
+		u.Packs.Special += req.Special
+
+		if err := s.store.User().ReplaseUser(u); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+		s.respond(w, r, http.StatusOK, nil)
 	}
 }
 

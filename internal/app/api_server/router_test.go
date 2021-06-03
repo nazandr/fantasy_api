@@ -2,6 +2,7 @@ package api_server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -154,11 +155,57 @@ func TestRouter_handleSingIn(t *testing.T) {
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.payload)
 			req, err := http.NewRequest(http.MethodPost, "/singin", b)
-			if err != nil {
-				assert.NoError(t, err)
-			}
+			assert.NoError(t, err)
+
 			s.ServeHTTP(rec, req)
 			assert.Equal(t, tc.expectedCode, rec.Code)
+		})
+	}
+}
+
+func TestRouter_addCardsPacks(t *testing.T) {
+	s := TestServer(t)
+	u := models.TestUser(t)
+	defer s.store.DropDb()
+
+	testCases := []struct {
+		name         string
+		payload      interface{}
+		expectedCode int
+	}{
+		{
+			name: "valid",
+			payload: models.Packs{
+				Common:  1,
+				Special: 1,
+			},
+			expectedCode: http.StatusOK,
+		},
+		{
+			name:         "invalid payload",
+			payload:      "invalid",
+			expectedCode: http.StatusBadRequest,
+		},
+		{
+			name: "invalid type",
+			payload: map[string]interface{}{
+				"Common":  "invalid",
+				"Special": 1,
+			},
+			expectedCode: http.StatusBadRequest,
+		},
+	}
+	s.store.User().Create(u)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			rec := httptest.NewRecorder()
+			b := &bytes.Buffer{}
+			json.NewEncoder(b).Encode(tc.payload)
+			req, err := http.NewRequest(http.MethodPost, "/addCardsPack", b)
+			assert.NoError(t, err)
+
+			s.addCardsPacks().ServeHTTP(rec, req.WithContext(context.WithValue(req.Context(), cxtKeyUser, u)))
+			assert.Equal(t, http.StatusText(tc.expectedCode), http.StatusText(rec.Code))
 		})
 	}
 }
