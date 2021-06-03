@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go v1.38.50 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
+	github.com/google/uuid v1.2.0 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/klauspost/compress v1.12.3 // indirect
 	github.com/sirupsen/logrus v1.8.1

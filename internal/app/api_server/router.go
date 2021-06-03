@@ -5,13 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/nazandr/fantasy_api/internal/app/models"
 	"github.com/nazandr/fantasy_api/internal/app/store"
+	"github.com/sirupsen/logrus"
 )
 
 const (
 	cxtKeyUser cxtKey = iota
+	cxtKeyRequestId
 )
 
 var (
@@ -22,10 +26,41 @@ var (
 type cxtKey int
 
 func (s *APIServer) configureRouter() {
+	s.router.Use(s.setRequestId)
+	s.router.Use(s.loggerReq)
 	s.router.HandleFunc("/singup", s.handleSingUp()).Methods("POST")
 	s.router.HandleFunc("/singin", s.handelSingIn()).Methods("POST")
+
+	auth := s.router.PathPrefix("/auth").Subrouter()
+	auth.Use(s.authenticateUser)
 }
 
+func (s *APIServer) setRequestId(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := uuid.New().String()
+		w.Header().Set("X-Request-ID", id)
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), cxtKeyRequestId, id)))
+	})
+}
+
+func (s *APIServer) loggerReq(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger := s.logger.WithFields(logrus.Fields{
+			"remote_addr": r.RemoteAddr,
+			"request_id":  r.Context().Value(cxtKeyRequestId),
+		})
+
+		logger.Infof("started %s %s", r.Method, r.RequestURI)
+		start := time.Now()
+
+		rw := &responseWriter{w, http.StatusOK}
+		next.ServeHTTP(rw, r)
+
+		logger.Infof("completed with %d %s at %v",
+			rw.code, http.StatusText(rw.code),
+			time.Since(start))
+	})
+}
 func (s *APIServer) authenticateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := NewToken()
