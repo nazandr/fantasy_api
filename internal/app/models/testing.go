@@ -12,7 +12,7 @@ func TestUser(t *testing.T) *User {
 		ID:       primitive.NewObjectID(),
 		Email:    "user@example.com",
 		Password: "password",
-		Packs: Packs{
+		Packs: PacksCount{
 			Common:  0,
 			Special: 0,
 		},

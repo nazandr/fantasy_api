@@ -175,7 +175,7 @@ func TestRouter_addCardsPacks(t *testing.T) {
 	}{
 		{
 			name: "valid",
-			payload: models.Packs{
+			payload: models.PacksCount{
 				Common:  1,
 				Special: 1,
 			},

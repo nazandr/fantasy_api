@@ -14,18 +14,18 @@ type User struct {
 	Email             string             `bson:"email" json:"email"`
 	Password          string             `bosn:"_" json:"password,omitempty"`
 	EncryptedPassword string             `bson:"encripted_password" json:"-"`
-	Packs             Packs
+	Packs             PacksCount
 	Session           session
+}
+
+type PacksCount struct {
+	Common  int `bson:"common" json:"common"`
+	Special int `bson:"special" json:"special"`
 }
 
 type session struct {
 	Refresh_token string    `bson:"refresh_token" json:"resresh_token"`
 	Expires_at    time.Time `bson:"expires_at"`
-}
-
-type Packs struct {
-	Common  int `bson:"common" json:"common"`
-	Special int `bson:"special" json:"special"`
 }
 
 func (u *User) Validate() error {

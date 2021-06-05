@@ -8,10 +8,11 @@ import (
 )
 
 type Store struct {
-	config         *Config
-	context        context.Context
-	db             *mongo.Database
-	userCollection *UserCollection
+	config                *Config
+	context               context.Context
+	db                    *mongo.Database
+	userCollection        *UserCollection
+	playerCardsCollection *PlayerCardsCollection
 }
 
 func New(c *Config) *Store {
@@ -54,4 +55,16 @@ func (s *Store) User() *UserCollection {
 		Collection: s.db.Collection("users"),
 	}
 	return s.userCollection
+}
+
+func (s *Store) PlayerCards() *PlayerCardsCollection {
+	if s.playerCardsCollection != nil {
+		return s.playerCardsCollection
+	}
+
+	s.playerCardsCollection = &PlayerCardsCollection{
+		Store:      s,
+		Collection: s.db.Collection("player_cards"),
+	}
+	return s.playerCardsCollection
 }

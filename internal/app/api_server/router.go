@@ -160,7 +160,7 @@ func (s *APIServer) handelSingIn() http.HandlerFunc {
 
 func (s *APIServer) addCardsPacks() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := &models.Packs{}
+		req := &models.PacksCount{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
