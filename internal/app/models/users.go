@@ -15,7 +15,8 @@ type User struct {
 	Password          string             `bosn:"_" json:"password,omitempty"`
 	EncryptedPassword string             `bson:"encripted_password" json:"-"`
 	Packs             PacksCount
-	Session           session
+	// CardsCollection   []store.PlayerCard
+	Session session
 }
 
 type PacksCount struct {

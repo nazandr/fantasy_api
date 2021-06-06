@@ -1,8 +1,10 @@
 package store
 
 import (
+	"math/rand"
+
+	"github.com/nazandr/fantasy_api/internal/app/models"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -11,28 +13,23 @@ type PlayerCardsCollection struct {
 	Collection *mongo.Collection
 }
 
-type PlayerCard struct {
-	Id          primitive.ObjectID `bson:"_id"`
-	AccountId   int                `bson:"account_id" json:"account_id"`
-	Name        string             `bson:"name" json:"name"`
-	FantacyRole int                `bson:"fantasy_role" json:"fantasy_role"`
-	Team        string             `bson:"team" json:"team_name"`
-	Rarity      int                `json:"rarity"`
+type Pack struct {
+	Cards [5]models.PlayerCard
 }
 
-func NewPlayer() *PlayerCard {
-	return &PlayerCard{}
+func NewPack() *Pack {
+	return &Pack{}
 }
 
-func (p *PlayerCardsCollection) GetAll() ([]PlayerCard, error) {
-	var playersList []PlayerCard
-	cursor, err := p.Collection.Find(p.Store.context, bson.D{{}})
+func (c *PlayerCardsCollection) GetAll() ([]models.PlayerCard, error) {
+	var playersList []models.PlayerCard
+	cursor, err := c.Collection.Find(c.Store.context, bson.D{{}})
 	if err != nil {
 		return nil, err
 	}
 
-	for cursor.Next(p.Store.context) {
-		var player PlayerCard
+	for cursor.Next(c.Store.context) {
+		var player models.PlayerCard
 
 		if err := cursor.Decode(&player); err != nil {
 			return nil, err
@@ -44,7 +41,42 @@ func (p *PlayerCardsCollection) GetAll() ([]PlayerCard, error) {
 		return nil, err
 	}
 
-	cursor.Close(p.Store.context)
+	cursor.Close(c.Store.context)
 
 	return playersList, nil
+}
+
+func (c *PlayerCardsCollection) OpenCommonPack(s *Store) (*Pack, error) {
+	it := []int{0, 1, 2, 3}
+	w := []float32{0.7, 0.23, 0.05, 0.2}
+	rareCard := false
+
+	players, err := c.GetAll()
+	if err != nil {
+		return nil, err
+	}
+	buffs, err := s.Buffs().GetAll()
+	if err != nil {
+		return nil, err
+	}
+	p := NewPack()
+
+	for i := 0; i < 5; i++ {
+		p.Cards[i] = players[rand.Intn(len(players))]
+		p.Cards[i].Rarity = models.RandomWithProbabilitis(it, w)
+		if p.Cards[i].Rarity > 0 {
+			rareCard = true
+		}
+		for bi := 0; bi < p.Cards[i].Rarity; bi++ {
+			p.Cards[i].Buffs = append(p.Cards[i].Buffs, buffs[rand.Intn(len(buffs))])
+		}
+	}
+	if !rareCard {
+		p.Cards[rand.Intn(3)].Rarity = 1
+	}
+
+	// i := reflect.ValueOf(fp).Elem().FieldByName(n.NameOfFild).Float()
+	// fmt.Println(i * float64(n.Multiplaier))
+
+	return p, nil
 }

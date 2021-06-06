@@ -1,6 +1,6 @@
 .PHONY: build
 build:
-	go build -v ./cmd/api_server
+	go build -v ./cmd/APIServer
 
 .PHONY: test
 test:
