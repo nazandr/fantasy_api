@@ -46,6 +46,7 @@ func (s *APIServer) configureRouter() {
 
 func (s *APIServer) setRequestId(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
 		id := uuid.New().String()
 		w.Header().Set("X-Request-ID", id)
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), cxtKeyRequestId, id)))
@@ -215,14 +216,20 @@ func (s *APIServer) addCardsPacks() http.HandlerFunc {
 func (s *APIServer) openCommonPack() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := r.Context().Value(cxtKeyUser).(*models.User)
-		if u.Packs.Common == 0 {
+		if u.Packs.Common <= 0 {
 			s.error(w, r, http.StatusBadRequest, errNoPacks)
+			return
 		}
 
 		p, err := s.store.PlayerCards().OpenCommonPack(s.store)
+		u.Packs.Common -= 1
+		u.CardsCollection = append(u.CardsCollection, p.Cards[:]...)
+		s.store.User().ReplaseUser(u)
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
+			return
 		}
+
 		s.respond(w, r, http.StatusOK, p)
 	}
 }
