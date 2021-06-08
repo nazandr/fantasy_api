@@ -8,7 +8,7 @@ import (
 )
 
 type PlayerCard struct {
-	Id          primitive.ObjectID `bson:"_id"`
+	Id          primitive.ObjectID `bson:"_id" json:"id"`
 	AccountId   int                `bson:"account_id" json:"account_id"`
 	Name        string             `bson:"name" json:"name"`
 	FantacyRole int                `bson:"fantasy_role" json:"fantasy_role"`

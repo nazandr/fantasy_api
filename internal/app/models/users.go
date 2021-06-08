@@ -14,6 +14,7 @@ type User struct {
 	Email             string             `bson:"email" json:"email"`
 	Password          string             `bosn:"_" json:"password,omitempty"`
 	EncryptedPassword string             `bson:"encripted_password" json:"-"`
+	FantacyCoins      int                `bson:"fantasy_coins" json:"fantacy_coins"`
 	Packs             PacksCount
 	CardsCollection   []PlayerCard `bson:"card_collection"`
 	Session           session
@@ -27,6 +28,22 @@ type PacksCount struct {
 type session struct {
 	Refresh_token string    `bson:"refresh_token" json:"resresh_token"`
 	Expires_at    time.Time `bson:"expires_at"`
+}
+
+func NewUser() *User {
+	return &User{
+		ID:                primitive.NewObjectID(),
+		Email:             "",
+		Password:          "",
+		EncryptedPassword: "",
+		FantacyCoins:      0,
+		Packs: PacksCount{
+			Common:  5,
+			Special: 0,
+		},
+		CardsCollection: []PlayerCard{},
+		Session:         session{},
+	}
 }
 
 func (u *User) Validate() error {

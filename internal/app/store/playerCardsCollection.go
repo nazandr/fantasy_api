@@ -70,7 +70,7 @@ func (c *PlayerCardsCollection) OpenCommonPack(s *Store) (*Pack, error) {
 		for bi := 0; bi < p.Cards[i].Rarity; bi++ {
 			idx := rand.Intn(len(buffs))
 			p.Cards[i].Buffs = append(p.Cards[i].Buffs, buffs[idx])
-			removeBuff(buffs, idx)
+			buffs = removeBuff(buffs, idx)
 		}
 	}
 	if !rareCard {

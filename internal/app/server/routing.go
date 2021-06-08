@@ -39,6 +39,7 @@ func (s *APIServer) configureRouter() {
 	auth.Use(s.authenticateUser)
 	auth.HandleFunc("/open-common-pack", s.openCommonPack()).Methods("POST")
 	auth.HandleFunc("/collection", s.collection()).Methods("GET")
+	auth.HandleFunc("/disenchant", s.disenchant())
 
 	admin := s.router.PathPrefix("/admin").Subrouter()
 	admin.Use(s.admin)
@@ -143,10 +144,10 @@ func (s *APIServer) handleSingUp() http.HandlerFunc {
 			return
 		}
 
-		u := &models.User{
-			Email:    req.Email,
-			Password: req.Password,
-		}
+		u := models.NewUser()
+		u.Email = req.Email
+		u.Password = req.Password
+
 		err := s.store.User().Create(u)
 		if err == store.ErrUserAllreadyExist {
 			s.error(w, r, http.StatusOK, err)
@@ -242,6 +243,34 @@ func (s *APIServer) collection() http.HandlerFunc {
 	}
 }
 
+func (s *APIServer) disenchant() http.HandlerFunc {
+	type card struct {
+		ID primitive.ObjectID `json:"card_id"`
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := &card{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+		u := r.Context().Value(cxtKeyUser).(*models.User)
+
+		for i, v := range u.CardsCollection {
+			if v.Id == req.ID {
+				u.CardsCollection = removeCard(u.CardsCollection, i)
+				break
+			}
+		}
+		u.FantacyCoins += 200
+		if err := s.store.User().ReplaseUser(u); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		s.respond(w, r, http.StatusOK, u.CardsCollection)
+	}
+}
+
 func (s *APIServer) error(w http.ResponseWriter, r *http.Request, code int, err error) {
 	s.respond(w, r, code, map[string]string{"error": err.Error()})
 
@@ -252,4 +281,9 @@ func (s *APIServer) respond(w http.ResponseWriter, r *http.Request, code int, da
 	if data != nil {
 		json.NewEncoder(w).Encode(data)
 	}
+}
+
+func removeCard(s []models.PlayerCard, i int) []models.PlayerCard {
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return s[:len(s)-1]
 }
