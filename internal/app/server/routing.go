@@ -37,7 +37,8 @@ func (s *APIServer) configureRouter() {
 
 	auth := s.router.PathPrefix("/auth").Subrouter()
 	auth.Use(s.authenticateUser)
-	auth.HandleFunc("/open-common-pack", s.openCommonPack())
+	auth.HandleFunc("/open-common-pack", s.openCommonPack()).Methods("POST")
+	auth.HandleFunc("/collection", s.collection()).Methods("GET")
 
 	admin := s.router.PathPrefix("/admin").Subrouter()
 	admin.Use(s.admin)
@@ -231,6 +232,13 @@ func (s *APIServer) openCommonPack() http.HandlerFunc {
 		}
 
 		s.respond(w, r, http.StatusOK, p)
+	}
+}
+
+func (s *APIServer) collection() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := r.Context().Value(cxtKeyUser).(*models.User)
+		s.respond(w, r, http.StatusOK, u.CardsCollection)
 	}
 }
 

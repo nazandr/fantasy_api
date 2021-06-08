@@ -68,7 +68,9 @@ func (c *PlayerCardsCollection) OpenCommonPack(s *Store) (*Pack, error) {
 			rareCard = true
 		}
 		for bi := 0; bi < p.Cards[i].Rarity; bi++ {
-			p.Cards[i].Buffs = append(p.Cards[i].Buffs, buffs[rand.Intn(len(buffs))])
+			idx := rand.Intn(len(buffs))
+			p.Cards[i].Buffs = append(p.Cards[i].Buffs, buffs[idx])
+			removeBuff(buffs, idx)
 		}
 	}
 	if !rareCard {
@@ -79,4 +81,9 @@ func (c *PlayerCardsCollection) OpenCommonPack(s *Store) (*Pack, error) {
 	// fmt.Println(i * float64(n.Multiplaier))
 
 	return p, nil
+}
+
+func removeBuff(s []models.Buff, i int) []models.Buff {
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return s[:len(s)-1]
 }
