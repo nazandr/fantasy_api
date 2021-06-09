@@ -224,15 +224,52 @@ func (s *APIServer) openCommonPack() http.HandlerFunc {
 		}
 
 		p, err := s.store.PlayerCards().OpenCommonPack(s.store)
-		u.Packs.Common -= 1
-		u.CardsCollection = append(u.CardsCollection, p.Cards[:]...)
-		s.store.User().ReplaseUser(u)
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
+		u.Packs.Common -= 1
+		packCopy := []models.PlayerCard{}
 
-		s.respond(w, r, http.StatusOK, p)
+		if len(u.CardsCollection) == 0 {
+			u.CardsCollection = make([][]models.PlayerCard, 5)
+			for i, v := range p.Cards {
+				v.Id = primitive.NewObjectID()
+				packCopy = append(packCopy, v)
+				u.CardsCollection[i] = append(u.CardsCollection[i], v)
+			}
+			s.store.User().ReplaseUser(u)
+			s.respond(w, r, http.StatusOK, packCopy)
+			return
+		}
+
+		for i := 0; i < len(u.CardsCollection); i++ {
+			if len(p.Cards) == 0 {
+				break
+			}
+			n := len(p.Cards)
+			for idx := 0; idx < n; idx++ {
+				if u.CardsCollection[i][0].AccountId == p.Cards[idx].AccountId {
+					p.Cards[idx].Id = primitive.NewObjectID()
+					packCopy = append(packCopy, p.Cards[idx])
+					u.CardsCollection[i] = append(u.CardsCollection[i], p.Cards[idx])
+					p.Cards = removeCard(p.Cards, idx)
+					break
+				}
+			}
+		}
+
+		if len(p.Cards) != 0 {
+			for _, v := range p.Cards {
+				v.Id = primitive.NewObjectID()
+				packCopy = append(packCopy, v)
+				n := []models.PlayerCard{v}
+				u.CardsCollection = append(u.CardsCollection, n)
+			}
+		}
+		s.store.User().ReplaseUser(u)
+
+		s.respond(w, r, http.StatusOK, packCopy)
 	}
 }
 
@@ -255,12 +292,18 @@ func (s *APIServer) disenchant() http.HandlerFunc {
 		}
 		u := r.Context().Value(cxtKeyUser).(*models.User)
 
-		for i, v := range u.CardsCollection {
-			if v.Id == req.ID {
-				u.CardsCollection = removeCard(u.CardsCollection, i)
-				break
+		for i := 0; i < len(u.CardsCollection); i++ {
+			for idx := 0; idx < len(u.CardsCollection[i]); idx++ {
+				if u.CardsCollection[i][idx].Id == req.ID {
+					u.CardsCollection[i] = removeCard(u.CardsCollection[i], idx)
+					if len(u.CardsCollection[i]) == 0 {
+						u.CardsCollection = removeSlice(u.CardsCollection, i)
+					}
+					break
+				}
 			}
 		}
+
 		u.FantacyCoins += 200
 		if err := s.store.User().ReplaseUser(u); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
@@ -284,6 +327,10 @@ func (s *APIServer) respond(w http.ResponseWriter, r *http.Request, code int, da
 }
 
 func removeCard(s []models.PlayerCard, i int) []models.PlayerCard {
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return s[:len(s)-1]
+}
+func removeSlice(s [][]models.PlayerCard, i int) [][]models.PlayerCard {
 	s[len(s)-1], s[i] = s[i], s[len(s)-1]
 	return s[:len(s)-1]
 }

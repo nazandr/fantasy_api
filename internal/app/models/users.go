@@ -16,7 +16,7 @@ type User struct {
 	EncryptedPassword string             `bson:"encripted_password" json:"-"`
 	FantacyCoins      int                `bson:"fantasy_coins" json:"fantacy_coins"`
 	Packs             PacksCount
-	CardsCollection   []PlayerCard `bson:"card_collection"`
+	CardsCollection   [][]PlayerCard `bson:"card_collection"`
 	Session           session
 }
 
@@ -41,7 +41,7 @@ func NewUser() *User {
 			Common:  5,
 			Special: 0,
 		},
-		CardsCollection: []PlayerCard{},
+		CardsCollection: [][]PlayerCard{},
 		Session:         session{},
 	}
 }

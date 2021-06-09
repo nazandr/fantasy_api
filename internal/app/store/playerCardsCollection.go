@@ -14,11 +14,13 @@ type PlayerCardsCollection struct {
 }
 
 type Pack struct {
-	Cards [5]models.PlayerCard
+	Cards []models.PlayerCard
 }
 
 func NewPack() *Pack {
-	return &Pack{}
+	return &Pack{
+		Cards: make([]models.PlayerCard, 5),
+	}
 }
 
 func (c *PlayerCardsCollection) GetAll() ([]models.PlayerCard, error) {
