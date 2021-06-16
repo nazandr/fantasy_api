@@ -19,9 +19,10 @@ type PlayerCard struct {
 }
 
 type Buff struct {
-	ID         primitive.ObjectID `bson:"_id"`
-	NameOfFild string             `bson:"name_of_fild"`
-	Multiplier float64            `bson:"multiplier"`
+	ID            primitive.ObjectID `bson:"_id" json:"_id"`
+	NameOfFild    string             `bson:"name_of_fild" json:"name_of_fild"`
+	DisplayedName string             `bson:"displayed_name" json:"displayed_name"`
+	Multiplier    int                `bson:"multiplier" json:"multiplier"`
 }
 
 func NewPlayerCard() *PlayerCard {
@@ -49,4 +50,25 @@ func RandomWithProbabilitis(items []int, weights []float32) int {
 		}
 	}
 	return 0
+}
+
+func SetBuffs(n int) []Buff {
+	rand.Seed(time.Now().UnixNano())
+	filds := []string{"Kills", "Assists", "LastHits", "Gpm", "TowerKills", "RoshanKils",
+		"Participation", "Observers", "CampStacked", "Runs", "FirsBlood", "Stuns"}
+	nameFilds := []string{"Убийства", "Помощь", "Добито", "GPM", "Башни", "Рошаны",
+		"Участие в убийствах", "Варды", "Стаки", "Руны", "Первая кровь", "Станы"}
+	mult := []int{5, 10, 15, 20, 25}
+	buffs := []Buff{}
+	for i := 0; i < n; i++ {
+		buff := Buff{}
+		buff.ID = primitive.NewObjectID()
+		r := rand.Intn(len(filds))
+		buff.NameOfFild = filds[r]
+		buff.DisplayedName = nameFilds[r]
+		buff.Multiplier = mult[rand.Intn(len(mult))]
+		buffs = append(buffs, buff)
+	}
+
+	return buffs
 }

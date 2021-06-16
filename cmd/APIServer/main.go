@@ -25,7 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(config.Store)
+
 	server := server.New(config)
 
 	if err := server.Start(); err != nil {

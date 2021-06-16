@@ -17,6 +17,7 @@ type User struct {
 	FantacyCoins      int                `bson:"fantasy_coins" json:"fantacy_coins"`
 	Packs             PacksCount
 	CardsCollection   [][]PlayerCard `bson:"card_collection"`
+	Teams             []FantacyTeam
 	Session           session
 }
 

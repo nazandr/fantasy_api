@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -34,16 +35,20 @@ func (s *APIServer) configureRouter() {
 	s.router.Use(s.loggerReq)
 	s.router.HandleFunc("/singup", s.handleSingUp()).Methods("POST")
 	s.router.HandleFunc("/singin", s.handelSingIn()).Methods("POST")
+	s.router.HandleFunc("/verify", s.verify()).Methods("GET")
 
 	auth := s.router.PathPrefix("/auth").Subrouter()
 	auth.Use(s.authenticateUser)
-	auth.HandleFunc("/open-common-pack", s.openCommonPack()).Methods("POST")
+	auth.HandleFunc("/openCommonPack", s.openCommonPack()).Methods("POST")
 	auth.HandleFunc("/collection", s.collection()).Methods("GET")
-	auth.HandleFunc("/disenchant", s.disenchant())
+	auth.HandleFunc("/user", s.userData()).Methods("GET")
+	auth.HandleFunc("/disenchant", s.disenchant()).Methods("POST")
+	auth.HandleFunc("/setFantacyTeam", s.setFantacyTeam()).Methods("POST")
+	auth.HandleFunc("fantacyTeamsCollection", s.fantacyTeamsCollection()).Methods("GET")
 
 	admin := s.router.PathPrefix("/admin").Subrouter()
 	admin.Use(s.admin)
-	admin.HandleFunc("/add-cards-pack", s.addCardsPacks()).Methods("POST")
+	admin.HandleFunc("/addCardsPack", s.addCardsPacks()).Methods("POST")
 }
 
 func (s *APIServer) setRequestId(next http.Handler) http.Handler {
@@ -73,6 +78,44 @@ func (s *APIServer) loggerReq(next http.Handler) http.Handler {
 			time.Since(start))
 	})
 }
+
+func (s *APIServer) verify() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := NewToken()
+		if err := json.NewDecoder(r.Body).Decode(token); err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+
+		id, err := token.ParseJWT(s.config)
+		if err != nil {
+			u, err := s.store.User().Find(id)
+			if err != nil {
+				s.error(w, r, http.StatusBadRequest, err)
+				return
+			}
+			fmt.Println(u.Session.Refresh_token)
+			fmt.Println(token.RefreshToken)
+			if u.Session.Refresh_token == token.RefreshToken {
+				fmt.Println(u.Session.Refresh_token)
+				fmt.Println(token.RefreshToken)
+				token := NewToken()
+				token.Auth(u.ID, s.config)
+				if err := s.store.User().UpdateRefreshToken(u.ID, token.RefreshToken, s.config.RefreshTokenExp); err != nil {
+					s.error(w, r, http.StatusInternalServerError, err)
+					return
+				}
+				s.respond(w, r, http.StatusOK, token)
+				return
+			} else {
+				s.error(w, r, http.StatusUnauthorized, errExpiredRefreshToken)
+				return
+			}
+		}
+		s.respond(w, r, http.StatusOK, token)
+	}
+}
+
 func (s *APIServer) authenticateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		b, err := ioutil.ReadAll(r.Body)
@@ -80,27 +123,35 @@ func (s *APIServer) authenticateUser(next http.Handler) http.Handler {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
+		r.Body = ioutil.NopCloser(bytes.NewReader(b))
 		token := NewToken()
-		if err := json.NewDecoder(bytes.NewReader(b)).Decode(token); err != nil {
+		if err := json.NewDecoder(bytes.NewBuffer(b)).Decode(token); err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
+
 		id, err := token.ParseJWT(s.config)
+		if err != nil {
+			u, err := s.store.User().Find(id)
+			if err != nil {
+				s.error(w, r, http.StatusBadRequest, err)
+				return
+			}
+			if u.Session.Refresh_token == token.RefreshToken {
+
+				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), cxtKeyUser, u)))
+				return
+			} else {
+				s.error(w, r, http.StatusUnauthorized, errExpiredRefreshToken)
+				return
+			}
+		}
+		u, err := s.store.User().Find(id)
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 
-		u, err := s.store.User().Find(id)
-		if err != nil {
-			s.error(w, r, http.StatusUnauthorized, err)
-			return
-		}
-		if u.Session.Refresh_token != token.RefreshToken {
-			s.error(w, r, http.StatusUnauthorized, errExpiredRefreshToken)
-		}
-
-		r.Body = ioutil.NopCloser(bytes.NewReader(b))
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), cxtKeyUser, u)))
 	})
 }
@@ -159,7 +210,12 @@ func (s *APIServer) handleSingUp() http.HandlerFunc {
 		}
 
 		u.Sanitaze()
-		s.respond(w, r, http.StatusCreated, u)
+		token := NewToken()
+		token.Auth(u.ID, s.config)
+		if err := s.store.User().UpdateRefreshToken(u.ID, token.RefreshToken, s.config.RefreshTokenExp); err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+		}
+		s.respond(w, r, http.StatusCreated, token)
 	}
 }
 
@@ -223,7 +279,7 @@ func (s *APIServer) openCommonPack() http.HandlerFunc {
 			return
 		}
 
-		p, err := s.store.PlayerCards().OpenCommonPack(s.store)
+		p, err := s.store.PlayerCards().OpenCommonPack()
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
@@ -234,7 +290,6 @@ func (s *APIServer) openCommonPack() http.HandlerFunc {
 		if len(u.CardsCollection) == 0 {
 			u.CardsCollection = make([][]models.PlayerCard, 5)
 			for i, v := range p.Cards {
-				v.Id = primitive.NewObjectID()
 				packCopy = append(packCopy, v)
 				u.CardsCollection[i] = append(u.CardsCollection[i], v)
 			}
@@ -247,26 +302,38 @@ func (s *APIServer) openCommonPack() http.HandlerFunc {
 			if len(p.Cards) == 0 {
 				break
 			}
-			n := len(p.Cards)
-			for idx := 0; idx < n; idx++ {
-				if u.CardsCollection[i][0].AccountId == p.Cards[idx].AccountId {
-					p.Cards[idx].Id = primitive.NewObjectID()
-					packCopy = append(packCopy, p.Cards[idx])
-					u.CardsCollection[i] = append(u.CardsCollection[i], p.Cards[idx])
+
+			for idx, v := range p.Cards {
+				if u.CardsCollection[i][0].AccountId == v.AccountId {
+					packCopy = append(packCopy, v)
+					u.CardsCollection[i] = append(u.CardsCollection[i], v)
+					p.Cards = removeCard(p.Cards, idx)
+					break
+				}
+			}
+		}
+		for i := 0; i < len(u.CardsCollection); i++ {
+			if len(p.Cards) == 0 {
+				break
+			}
+
+			for idx, v := range p.Cards {
+				if u.CardsCollection[i][0].AccountId == v.AccountId {
+					packCopy = append(packCopy, v)
+					u.CardsCollection[i] = append(u.CardsCollection[i], v)
 					p.Cards = removeCard(p.Cards, idx)
 					break
 				}
 			}
 		}
 
-		if len(p.Cards) != 0 {
-			for _, v := range p.Cards {
-				v.Id = primitive.NewObjectID()
-				packCopy = append(packCopy, v)
-				n := []models.PlayerCard{v}
-				u.CardsCollection = append(u.CardsCollection, n)
-			}
+		for _, v := range p.Cards {
+			v.Id = primitive.NewObjectID()
+			packCopy = append(packCopy, v)
+			n := []models.PlayerCard{v}
+			u.CardsCollection = append(u.CardsCollection, n)
 		}
+
 		s.store.User().ReplaseUser(u)
 
 		s.respond(w, r, http.StatusOK, packCopy)
@@ -280,6 +347,13 @@ func (s *APIServer) collection() http.HandlerFunc {
 	}
 }
 
+func (s *APIServer) userData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := r.Context().Value(cxtKeyUser).(*models.User)
+		s.respond(w, r, http.StatusOK, u)
+	}
+}
+
 func (s *APIServer) disenchant() http.HandlerFunc {
 	type card struct {
 		ID primitive.ObjectID `json:"card_id"`
@@ -287,14 +361,16 @@ func (s *APIServer) disenchant() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := &card{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			s.logger.Info(err)
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 		u := r.Context().Value(cxtKeyUser).(*models.User)
-
+		rar := 1
 		for i := 0; i < len(u.CardsCollection); i++ {
 			for idx := 0; idx < len(u.CardsCollection[i]); idx++ {
 				if u.CardsCollection[i][idx].Id == req.ID {
+					rar += u.CardsCollection[i][idx].Rarity
 					u.CardsCollection[i] = removeCard(u.CardsCollection[i], idx)
 					if len(u.CardsCollection[i]) == 0 {
 						u.CardsCollection = removeSlice(u.CardsCollection, i)
@@ -304,13 +380,39 @@ func (s *APIServer) disenchant() http.HandlerFunc {
 			}
 		}
 
-		u.FantacyCoins += 200
+		u.FantacyCoins += 100 * rar
 		if err := s.store.User().ReplaseUser(u); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 
 		s.respond(w, r, http.StatusOK, u.CardsCollection)
+	}
+}
+
+func (s *APIServer) setFantacyTeam() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := &[]models.PlayerCard{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+		team := models.NewTeam()
+		team.Team = *req
+		u := r.Context().Value(cxtKeyUser).(*models.User)
+
+		if err := s.store.User().ReplaseUser(u); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+		s.respond(w, r, http.StatusOK, nil)
+	}
+}
+
+func (s *APIServer) fantacyTeamsCollection() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := r.Context().Value(cxtKeyUser).(*models.User)
+		s.respond(w, r, http.StatusOK, u.Teams)
 	}
 }
 

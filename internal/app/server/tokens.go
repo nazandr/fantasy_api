@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"time"
@@ -14,7 +15,9 @@ type Token struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-var ()
+var (
+	errTokenInvalid = errors.New("token invalid")
+)
 
 func NewToken() *Token {
 	return &Token{
@@ -71,7 +74,18 @@ func (t *Token) ParseJWT(conf *Config) (primitive.ObjectID, error) {
 		return []byte(conf.SignatureKey), nil
 	})
 	if err != nil || !token.Valid {
-		return primitive.NilObjectID, err
+		claims, ok := token.Claims.(jwt.MapClaims)
+
+		if !ok {
+			return primitive.NilObjectID, fmt.Errorf("error get user claims from token")
+		}
+
+		id, err := primitive.ObjectIDFromHex(claims["sub"].(string))
+		if err != nil {
+			return id, err
+		}
+
+		return id, fmt.Errorf("token invalid")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)

@@ -5,6 +5,7 @@ import (
 
 	"github.com/nazandr/fantasy_api/internal/app/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -48,7 +49,7 @@ func (c *PlayerCardsCollection) GetAll() ([]models.PlayerCard, error) {
 	return playersList, nil
 }
 
-func (c *PlayerCardsCollection) OpenCommonPack(s *Store) (*Pack, error) {
+func (c *PlayerCardsCollection) OpenCommonPack() (*Pack, error) {
 	it := []int{0, 1, 2, 3}
 	w := []float32{0.7, 0.23, 0.05, 0.2}
 	rareCard := false
@@ -57,35 +58,28 @@ func (c *PlayerCardsCollection) OpenCommonPack(s *Store) (*Pack, error) {
 	if err != nil {
 		return nil, err
 	}
-	buffs, err := s.Buffs().GetAll()
-	if err != nil {
-		return nil, err
-	}
+
 	p := NewPack()
 
 	for i := 0; i < 5; i++ {
 		p.Cards[i] = players[rand.Intn(len(players))]
 		p.Cards[i].Rarity = models.RandomWithProbabilitis(it, w)
+		p.Cards[i].Id = primitive.NewObjectID()
 		if p.Cards[i].Rarity > 0 {
 			rareCard = true
-		}
-		for bi := 0; bi < p.Cards[i].Rarity; bi++ {
-			idx := rand.Intn(len(buffs))
-			p.Cards[i].Buffs = append(p.Cards[i].Buffs, buffs[idx])
-			buffs = removeBuff(buffs, idx)
+			buffs := models.SetBuffs(p.Cards[i].Rarity)
+			p.Cards[i].Buffs = buffs
 		}
 	}
 	if !rareCard {
-		p.Cards[rand.Intn(3)].Rarity = 1
+		n := rand.Intn(4)
+		p.Cards[n].Rarity = 1
+		buffs := models.SetBuffs(p.Cards[n].Rarity)
+		p.Cards[n].Buffs = buffs
 	}
 
 	// i := reflect.ValueOf(fp).Elem().FieldByName(n.NameOfFild).Float()
 	// fmt.Println(i * float64(n.Multiplaier))
 
 	return p, nil
-}
-
-func removeBuff(s []models.Buff, i int) []models.Buff {
-	s[len(s)-1], s[i] = s[i], s[len(s)-1]
-	return s[:len(s)-1]
 }
