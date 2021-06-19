@@ -97,8 +97,6 @@ func (s *APIServer) verify() http.HandlerFunc {
 			fmt.Println(u.Session.Refresh_token)
 			fmt.Println(token.RefreshToken)
 			if u.Session.Refresh_token == token.RefreshToken {
-				fmt.Println(u.Session.Refresh_token)
-				fmt.Println(token.RefreshToken)
 				token := NewToken()
 				token.Auth(u.ID, s.config)
 				if err := s.store.User().UpdateRefreshToken(u.ID, token.RefreshToken, s.config.RefreshTokenExp); err != nil {
@@ -392,13 +390,16 @@ func (s *APIServer) disenchant() http.HandlerFunc {
 
 func (s *APIServer) setFantacyTeam() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := &[]models.PlayerCard{}
-		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		req := []models.PlayerCard{}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 		team := models.NewTeam()
-		team.Team = *req
+		for i := 0; i < 5; i++ {
+			team.Team[i].PlayerID = req[i].Id
+		}
+
 		u := r.Context().Value(cxtKeyUser).(*models.User)
 
 		if err := s.store.User().ReplaseUser(u); err != nil {
@@ -412,6 +413,11 @@ func (s *APIServer) setFantacyTeam() http.HandlerFunc {
 func (s *APIServer) fantacyTeamsCollection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := r.Context().Value(cxtKeyUser).(*models.User)
+		for _, v := range u.Teams {
+			if v.Team[0].Points == 0.0 {
+
+			}
+		}
 		s.respond(w, r, http.StatusOK, u.Teams)
 	}
 }

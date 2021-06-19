@@ -14,6 +14,7 @@ type Store struct {
 	userCollection        *UserCollection
 	playerCardsCollection *PlayerCardsCollection
 	buffsCollection       *BuffsCollection
+	matchCollection       *MatchCollection
 }
 
 func New(c *Config) *Store {
@@ -80,4 +81,16 @@ func (s *Store) Buffs() *BuffsCollection {
 		Collection: s.db.Collection("card_buffs"),
 	}
 	return s.buffsCollection
+}
+
+func (s *Store) Matches() *MatchCollection {
+	if s.matchCollection != nil {
+		return s.matchCollection
+	}
+
+	s.matchCollection = &MatchCollection{
+		Store:      s,
+		Collection: s.db.Collection("matches"),
+	}
+	return s.matchCollection
 }
