@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -11,10 +12,11 @@ type Match struct {
 	ID      primitive.ObjectID `bson:"_id" json:"_id"`
 	Teams   []string           `bson:"teams" json:"teams"`
 	MatchID int64              `bson:"match_id"`
+	Date    time.Time          `bson:"date"`
 	Points  []Points
 }
 type Points struct {
-	PlayerID      int     `bson:"account_id"`
+	AccountId     int     `bson:"account_id"`
 	Total         float32 `bson:"name"`
 	Kills         float32 `bson:"kills"`
 	Deaths        float32 `bson:"deaths"`
@@ -75,7 +77,7 @@ func (m *Match) CalcPoints(matchID int64) {
 	}
 
 	for i, v := range match.Players {
-		m.Points[i].PlayerID = v.SteamId
+		m.Points[i].AccountId = v.SteamId
 		m.Points[i].Kills = (float32(v.Kills) * 0.3)
 		m.Points[i].Deaths = float32(v.Deaths) * -0.3
 		m.Points[i].Assists = float32(v.Assists) * 0.15

@@ -2,4 +2,4 @@ ip_addr = ":8080"
 log_lvl = "debug"
 
 [store]
-database_url = "mongodb://localhost:27017/"
+database_url = "mongodb://mongodb:27017/"

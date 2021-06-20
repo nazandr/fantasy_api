@@ -7,7 +7,7 @@ type Config struct {
 
 func NewConfig() *Config {
 	return &Config{
-		Database_url: "mongodb://localhost:27017/",
+		Database_url: "mongodb://mongodb:27017/",
 		DbName:       "fantacy",
 	}
 }

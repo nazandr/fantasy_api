@@ -397,7 +397,9 @@ func (s *APIServer) setFantacyTeam() http.HandlerFunc {
 		}
 		team := models.NewTeam()
 		for i := 0; i < 5; i++ {
-			team.Team[i].PlayerID = req[i].Id
+			team.Team[i].ID = req[i].Id
+			team.Team[i].AccountId = req[i].AccountId
+			team.Team[i].TeamName = req[i].Team
 		}
 
 		u := r.Context().Value(cxtKeyUser).(*models.User)
@@ -415,7 +417,12 @@ func (s *APIServer) fantacyTeamsCollection() http.HandlerFunc {
 		u := r.Context().Value(cxtKeyUser).(*models.User)
 		for _, v := range u.Teams {
 			if v.Team[0].Points == 0.0 {
-
+				matches, err := s.store.Matches().FindByDate(v.Date)
+				if err != nil {
+					s.error(w, r, http.StatusBadRequest, err)
+					return
+				}
+				v.SetPoints(matches)
 			}
 		}
 		s.respond(w, r, http.StatusOK, u.Teams)

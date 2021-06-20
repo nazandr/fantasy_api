@@ -13,8 +13,10 @@ type FantasyTeam struct {
 }
 
 type Player struct {
-	PlayerID primitive.ObjectID
-	Points   float32
+	ID        primitive.ObjectID
+	AccountId int
+	TeamName  string
+	Points    float32
 }
 
 func NewTeam() *FantasyTeam {
@@ -22,5 +24,19 @@ func NewTeam() *FantasyTeam {
 		ID:   primitive.NewObjectID(),
 		Date: time.Now(),
 		Team: make([]Player, 5),
+	}
+}
+
+func (team *FantasyTeam) SetPoints(matches []Match) {
+	for _, match := range matches {
+		for _, player := range team.Team {
+			if player.TeamName == match.Teams[0] || player.TeamName == match.Teams[1] {
+				for _, v := range match.Points {
+					if v.AccountId == player.AccountId {
+						player.Points = v.Total
+					}
+				}
+			}
+		}
 	}
 }

@@ -1,0 +1,38 @@
+version: '3.4'
+
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - mongodb_network
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo mongodb:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  fantasyapi:
+    image: fantasyapi
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      - mongodb
+    networks:
+      - mongodb_network
+    restart: always
+
+volumes:
+  mongodb-data:
+    name: mongodb-data
+networks:
+  mongodb_network:
+    name: mongodb_network
