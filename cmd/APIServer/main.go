@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/BurntSushi/toml"
+	"github.com/nazandr/fantasy_api/internal/app/matches"
 	"github.com/nazandr/fantasy_api/internal/app/server"
 )
 
@@ -27,6 +28,8 @@ func main() {
 	}
 
 	server := server.New(config)
+	matchServer := matches.NewMatchServer(server)
+	go matchServer.Ticker()
 
 	if err := server.Start(); err != nil {
 		log.Fatal(err)

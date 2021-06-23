@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -10,18 +11,21 @@ import (
 
 type APIServer struct {
 	config *Config
-	logger *logrus.Logger
+	Logger *logrus.Logger
 	router *mux.Router
-	store  *store.Store
+	Store  *store.Store
 }
 
 func New(config *Config) *APIServer {
 	s := &APIServer{
 		config: config,
-		logger: logrus.New(),
+		Logger: logrus.New(),
 		router: mux.NewRouter(),
 	}
 	s.configureRouter()
+	if err := s.storeConfig(); err != nil {
+		log.Fatal(err)
+	}
 	return s
 }
 
@@ -34,10 +38,7 @@ func (s *APIServer) Start() error {
 		return err
 	}
 
-	if err := s.storeConfig(); err != nil {
-		return err
-	}
-	s.logger.Info("api server started")
+	s.Logger.Info("api server started")
 
 	return http.ListenAndServe(s.config.IP_addr, s.router)
 }
@@ -48,7 +49,7 @@ func (s *APIServer) loggerConfig() error {
 		return err
 	}
 
-	s.logger.SetLevel(lvl)
+	s.Logger.SetLevel(lvl)
 
 	return nil
 }
@@ -59,8 +60,8 @@ func (s *APIServer) storeConfig() error {
 	if err := st.Connect(); err != nil {
 		return err
 	}
-	s.store = st
+	s.Store = st
 
-	s.logger.Info("Connected to DB")
+	s.Logger.Info("Connected to DB")
 	return nil
 }

@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/nazandr/fantasy_api/internal/app/models"
+	"github.com/nazandr/fantasy_api/internal/app/server"
 	"github.com/nazandr/fantasy_api/internal/app/store"
 )
 
@@ -13,6 +15,7 @@ type MatchServer struct {
 	Tournaments tournaments
 	LastMatch   int64
 	Store       *store.Store
+	Server      *server.APIServer
 }
 
 type tournaments []struct {
@@ -30,10 +33,27 @@ type match []struct {
 	RadiantWin  bool   `json:"radiant_win"`
 }
 
-func NewMatchServer(s *store.Store) *MatchServer {
+func NewMatchServer(s *server.APIServer) *MatchServer {
 	return &MatchServer{
 		Tournaments: RefreshTournaments(),
-		Store:       s,
+		Store:       s.Store,
+		Server:      s,
+	}
+}
+
+func (m *MatchServer) Ticker() {
+	m.Tournaments = RefreshTournaments()
+	m.Server.Logger.Info("refreshed")
+	if err := m.Serve(); err != nil {
+		m.Server.Logger.Info(err)
+	}
+	m.Server.Logger.Info("served")
+	ticker := time.NewTicker(1 * time.Hour)
+	for range ticker.C {
+		m.Tournaments = RefreshTournaments()
+		if err := m.Serve(); err != nil {
+			m.Server.Logger.Info(err)
+		}
 	}
 }
 

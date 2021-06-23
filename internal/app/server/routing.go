@@ -62,7 +62,7 @@ func (s *APIServer) setRequestId(next http.Handler) http.Handler {
 
 func (s *APIServer) loggerReq(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := s.logger.WithFields(logrus.Fields{
+		logger := s.Logger.WithFields(logrus.Fields{
 			"remote_addr": r.RemoteAddr,
 			"request_id":  r.Context().Value(cxtKeyRequestId),
 		})
@@ -89,7 +89,7 @@ func (s *APIServer) verify() http.HandlerFunc {
 
 		id, err := token.ParseJWT(s.config)
 		if err != nil {
-			u, err := s.store.User().Find(id)
+			u, err := s.Store.User().Find(id)
 			if err != nil {
 				s.error(w, r, http.StatusBadRequest, err)
 				return
@@ -99,7 +99,7 @@ func (s *APIServer) verify() http.HandlerFunc {
 			if u.Session.Refresh_token == token.RefreshToken {
 				token := NewToken()
 				token.Auth(u.ID, s.config)
-				if err := s.store.User().UpdateRefreshToken(u.ID, token.RefreshToken, s.config.RefreshTokenExp); err != nil {
+				if err := s.Store.User().UpdateRefreshToken(u.ID, token.RefreshToken, s.config.RefreshTokenExp); err != nil {
 					s.error(w, r, http.StatusInternalServerError, err)
 					return
 				}
@@ -130,7 +130,7 @@ func (s *APIServer) authenticateUser(next http.Handler) http.Handler {
 
 		id, err := token.ParseJWT(s.config)
 		if err != nil {
-			u, err := s.store.User().Find(id)
+			u, err := s.Store.User().Find(id)
 			if err != nil {
 				s.error(w, r, http.StatusBadRequest, err)
 				return
@@ -144,7 +144,7 @@ func (s *APIServer) authenticateUser(next http.Handler) http.Handler {
 				return
 			}
 		}
-		u, err := s.store.User().Find(id)
+		u, err := s.Store.User().Find(id)
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
@@ -170,7 +170,7 @@ func (s *APIServer) admin(next http.Handler) http.Handler {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
-		u, err := s.store.User().Find(req.UserId)
+		u, err := s.Store.User().Find(req.UserId)
 
 		if err != nil {
 			s.error(w, r, http.StatusUnauthorized, err)
@@ -197,7 +197,7 @@ func (s *APIServer) handleSingUp() http.HandlerFunc {
 		u.Email = req.Email
 		u.Password = req.Password
 
-		err := s.store.User().Create(u)
+		err := s.Store.User().Create(u)
 		if err == store.ErrUserAllreadyExist {
 			s.error(w, r, http.StatusOK, err)
 			return
@@ -210,7 +210,7 @@ func (s *APIServer) handleSingUp() http.HandlerFunc {
 		u.Sanitaze()
 		token := NewToken()
 		token.Auth(u.ID, s.config)
-		if err := s.store.User().UpdateRefreshToken(u.ID, token.RefreshToken, s.config.RefreshTokenExp); err != nil {
+		if err := s.Store.User().UpdateRefreshToken(u.ID, token.RefreshToken, s.config.RefreshTokenExp); err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 		}
 		s.respond(w, r, http.StatusCreated, token)
@@ -230,7 +230,7 @@ func (s *APIServer) handelSingIn() http.HandlerFunc {
 			return
 		}
 
-		u, err := s.store.User().FindByEmail(req.Email)
+		u, err := s.Store.User().FindByEmail(req.Email)
 		if err != nil {
 			s.error(w, r, http.StatusUnauthorized, errIncorectEmailOrPassword)
 			return
@@ -241,7 +241,7 @@ func (s *APIServer) handelSingIn() http.HandlerFunc {
 		}
 		token := NewToken()
 		token.Auth(u.ID, s.config)
-		if err := s.store.User().UpdateRefreshToken(u.ID, token.RefreshToken, s.config.RefreshTokenExp); err != nil {
+		if err := s.Store.User().UpdateRefreshToken(u.ID, token.RefreshToken, s.config.RefreshTokenExp); err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 		}
 		s.respond(w, r, http.StatusOK, token)
@@ -261,7 +261,7 @@ func (s *APIServer) addCardsPacks() http.HandlerFunc {
 		u.Packs.Common += req.Common
 		u.Packs.Special += req.Special
 
-		if err := s.store.User().ReplaseUser(u); err != nil {
+		if err := s.Store.User().ReplaseUser(u); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
@@ -277,7 +277,7 @@ func (s *APIServer) openCommonPack() http.HandlerFunc {
 			return
 		}
 
-		p, err := s.store.PlayerCards().OpenCommonPack()
+		p, err := s.Store.PlayerCards().OpenCommonPack()
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
@@ -291,7 +291,7 @@ func (s *APIServer) openCommonPack() http.HandlerFunc {
 				packCopy = append(packCopy, v)
 				u.CardsCollection[i] = append(u.CardsCollection[i], v)
 			}
-			s.store.User().ReplaseUser(u)
+			s.Store.User().ReplaseUser(u)
 			s.respond(w, r, http.StatusOK, packCopy)
 			return
 		}
@@ -332,7 +332,7 @@ func (s *APIServer) openCommonPack() http.HandlerFunc {
 			u.CardsCollection = append(u.CardsCollection, n)
 		}
 
-		s.store.User().ReplaseUser(u)
+		s.Store.User().ReplaseUser(u)
 
 		s.respond(w, r, http.StatusOK, packCopy)
 	}
@@ -359,7 +359,6 @@ func (s *APIServer) disenchant() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := &card{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			s.logger.Info(err)
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
@@ -379,7 +378,7 @@ func (s *APIServer) disenchant() http.HandlerFunc {
 		}
 
 		u.FantacyCoins += 100 * rar
-		if err := s.store.User().ReplaseUser(u); err != nil {
+		if err := s.Store.User().ReplaseUser(u); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
@@ -404,7 +403,7 @@ func (s *APIServer) setFantacyTeam() http.HandlerFunc {
 
 		u := r.Context().Value(cxtKeyUser).(*models.User)
 
-		if err := s.store.User().ReplaseUser(u); err != nil {
+		if err := s.Store.User().ReplaseUser(u); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
@@ -417,7 +416,7 @@ func (s *APIServer) fantacyTeamsCollection() http.HandlerFunc {
 		u := r.Context().Value(cxtKeyUser).(*models.User)
 		for _, v := range u.Teams {
 			if v.Team[0].Points == 0.0 {
-				matches, err := s.store.Matches().FindByDate(v.Date)
+				matches, err := s.Store.Matches().FindByDate(v.Date)
 				if err != nil {
 					s.error(w, r, http.StatusBadRequest, err)
 					return

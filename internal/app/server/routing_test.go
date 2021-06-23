@@ -14,15 +14,15 @@ import (
 
 func TestRouter_authenticateUser(t *testing.T) {
 	s := TestServer(t)
-	defer s.store.DropDb()
+	defer s.Store.DropDb()
 
 	u := models.TestUser(t)
-	s.store.User().Create(u)
+	s.Store.User().Create(u)
 
 	conf := NewConfig()
 	newToken := NewToken()
 	newToken.Auth(u.ID, conf)
-	s.store.User().UpdateRefreshToken(u.ID, newToken.RefreshToken, conf.RefreshTokenExp)
+	s.Store.User().UpdateRefreshToken(u.ID, newToken.RefreshToken, conf.RefreshTokenExp)
 
 	testCases := []struct {
 		name         string
@@ -56,10 +56,10 @@ func TestRouter_authenticateUser(t *testing.T) {
 
 func TestRouter_admin(t *testing.T) {
 	s := TestServer(t)
-	defer s.store.DropDb()
+	defer s.Store.DropDb()
 
 	u := models.TestUser(t)
-	s.store.User().Create(u)
+	s.Store.User().Create(u)
 
 	testCases := []struct {
 		name         string
@@ -93,7 +93,7 @@ func TestRouter_admin(t *testing.T) {
 
 func TestRouter_handleSingUp(t *testing.T) {
 	s := TestServer(t)
-	defer s.store.DropDb()
+	defer s.Store.DropDb()
 	testCases := []struct {
 		name         string
 		payload      interface{}
@@ -148,7 +148,7 @@ func TestRouter_handleSingUp(t *testing.T) {
 func TestRouter_handleSingIn(t *testing.T) {
 	s := TestServer(t)
 	u := models.TestUser(t)
-	defer s.store.DropDb()
+	defer s.Store.DropDb()
 
 	testCases := []struct {
 		name         string
@@ -185,7 +185,7 @@ func TestRouter_handleSingIn(t *testing.T) {
 			expectedCode: http.StatusUnauthorized,
 		},
 	}
-	s.store.User().Create(u)
+	s.Store.User().Create(u)
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rec := httptest.NewRecorder()
@@ -203,7 +203,7 @@ func TestRouter_handleSingIn(t *testing.T) {
 func TestRouter_addCardsPacks(t *testing.T) {
 	s := TestServer(t)
 	u := models.TestUser(t)
-	defer s.store.DropDb()
+	defer s.Store.DropDb()
 
 	testCases := []struct {
 		name         string
@@ -242,7 +242,7 @@ func TestRouter_addCardsPacks(t *testing.T) {
 			expectedCode: http.StatusOK,
 		},
 	}
-	s.store.User().Create(u)
+	s.Store.User().Create(u)
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rec := httptest.NewRecorder()

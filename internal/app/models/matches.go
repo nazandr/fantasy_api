@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,7 +18,8 @@ type Match struct {
 }
 type Points struct {
 	AccountId     int     `bson:"account_id"`
-	Total         float32 `bson:"name"`
+	Name          string  `json:"name"`
+	Total         float32 `bson:"total"`
 	Kills         float32 `bson:"kills"`
 	Deaths        float32 `bson:"deaths"`
 	Assists       float32 `bson:"assists"`
@@ -52,21 +54,31 @@ type player struct {
 }
 
 type match struct {
-	MatchId int      `json:"match_id"`
+	MatchId     int `json:"match_id"`
+	RadiantTeam struct {
+		TeamID int    `json:"team_id"`
+		Name   string `json:"name"`
+	} `json:"radiant_team"`
+	DireTeam struct {
+		TeamID int    `json:"team_id"`
+		Name   string `json:"name"`
+	} `json:"dire_team"`
 	Players []player `json:"players"`
 }
 
 func NewMatch() *Match {
 	return &Match{
 		ID:      primitive.NewObjectID(),
-		Teams:   []string{},
+		Date:    time.Now(),
+		Teams:   make([]string, 2),
 		MatchID: 0,
 		Points:  make([]Points, 10),
 	}
 }
 
 func (m *Match) CalcPoints(matchID int64) {
-	res, err := request("https://api.opendota.com/api/matches/"+string(matchID), "GET")
+	s := "https://api.opendota.com/api/matches/" + strconv.Itoa(int(matchID))
+	res, err := request(s, "GET")
 	if err != nil {
 		return
 	}
@@ -76,8 +88,13 @@ func (m *Match) CalcPoints(matchID int64) {
 		return
 	}
 
+	m.MatchID = matchID
+	m.Teams[0] = match.RadiantTeam.Name
+	m.Teams[1] = match.DireTeam.Name
+
 	for i, v := range match.Players {
 		m.Points[i].AccountId = v.SteamId
+		m.Points[i].Name = v.Name
 		m.Points[i].Kills = (float32(v.Kills) * 0.3)
 		m.Points[i].Deaths = float32(v.Deaths) * -0.3
 		m.Points[i].Assists = float32(v.Assists) * 0.15
@@ -106,7 +123,6 @@ func request(url string, method string) (*http.Response, error) {
 	}
 
 	c := &http.Client{}
-	req.Header.Add("Content-Type", "application/json")
 	res, err := c.Do(req)
 	if err != nil {
 		return nil, err
