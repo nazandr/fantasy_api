@@ -11,7 +11,7 @@ type PlayerCard struct {
 	Id          primitive.ObjectID `bson:"_id" json:"id"`
 	AccountId   int                `bson:"account_id" json:"account_id"`
 	Name        string             `bson:"name" json:"name"`
-	FantacyRole int                `bson:"fantasy_role" json:"fantasy_role"`
+	FantasyRole int                `bson:"fantasy_role" json:"fantasy_role"`
 	Team        string             `bson:"team" json:"team_name"`
 	Rarity      int                `json:"rarity"`
 
@@ -68,7 +68,14 @@ func SetBuffs(n int) []Buff {
 		buff.DisplayedName = nameFilds[r]
 		buff.Multiplier = mult[rand.Intn(len(mult))]
 		buffs = append(buffs, buff)
+		filds = removeFild(filds, r)
+		nameFilds = removeFild(nameFilds, r)
 	}
 
 	return buffs
+}
+
+func removeFild(s []string, i int) []string {
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return s[:len(s)-1]
 }

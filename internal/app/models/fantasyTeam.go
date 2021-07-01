@@ -7,16 +7,15 @@ import (
 )
 
 type FantasyTeam struct {
-	ID   primitive.ObjectID `bson:"_id" json:"id"`
-	Date time.Time          `bson:"date" json:"date"`
-	Team []Player           `bosn:"team" json:"team"`
+	ID    primitive.ObjectID `bson:"_id" json:"id"`
+	Date  time.Time          `bson:"date" json:"date"`
+	Team  []Player           `bosn:"team" json:"team"`
+	Total float32            `bson:"total" json:"total"`
 }
 
 type Player struct {
-	ID        primitive.ObjectID
-	AccountId int
-	TeamName  string
-	Points    float32
+	PlayerCard PlayerCard
+	Points     float32
 }
 
 func NewTeam() *FantasyTeam {
@@ -28,15 +27,19 @@ func NewTeam() *FantasyTeam {
 }
 
 func (team *FantasyTeam) SetPoints(matches []Match) {
+	var total float32
 	for _, match := range matches {
-		for _, player := range team.Team {
-			if player.TeamName == match.Teams[0] || player.TeamName == match.Teams[1] {
+		for iPlayer, player := range team.Team {
+			if player.PlayerCard.Team == match.Teams[0] || player.PlayerCard.Team == match.Teams[1] {
 				for _, v := range match.Points {
-					if v.AccountId == player.AccountId {
-						player.Points = v.Total
+					if v.AccountId == player.PlayerCard.AccountId {
+						total += v.Total
+						team.Team[iPlayer].Points = v.Total
 					}
 				}
 			}
 		}
 	}
+
+	team.Total = total
 }

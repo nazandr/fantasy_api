@@ -43,7 +43,7 @@ func (s *APIServer) configureRouter() {
 	auth.HandleFunc("/collection", s.collection()).Methods("GET")
 	auth.HandleFunc("/user", s.userData()).Methods("GET")
 	auth.HandleFunc("/disenchant", s.disenchant()).Methods("POST")
-	auth.HandleFunc("/setFantacyTeam", s.setFantacyTeam()).Methods("POST")
+	auth.HandleFunc("/setFantasyTeam", s.setFantacyTeam()).Methods("POST")
 	auth.HandleFunc("fantacyTeamsCollection", s.fantacyTeamsCollection()).Methods("GET")
 
 	admin := s.router.PathPrefix("/admin").Subrouter()
@@ -348,6 +348,21 @@ func (s *APIServer) collection() http.HandlerFunc {
 func (s *APIServer) userData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := r.Context().Value(cxtKeyUser).(*models.User)
+
+		for i := 0; i < len(u.Teams); i++ {
+			if u.Teams[i].Team[0].Points == 0.0 {
+				matches, err := s.Store.Matches().FindByDate(u.Teams[i].Date)
+				if err != nil {
+					s.error(w, r, http.StatusBadRequest, err)
+					return
+				}
+				u.Teams[i].SetPoints(matches)
+			}
+		}
+		if err := s.Store.User().ReplaseUser(u); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
 		s.respond(w, r, http.StatusOK, u)
 	}
 }
@@ -388,20 +403,27 @@ func (s *APIServer) disenchant() http.HandlerFunc {
 }
 
 func (s *APIServer) setFantacyTeam() http.HandlerFunc {
+	// todo: добавить проверку на уже существуют
+	type request struct {
+		Team []models.PlayerCard `json:"team"`
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := []models.PlayerCard{}
+		req := request{}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 		team := models.NewTeam()
-		for i := 0; i < 5; i++ {
-			team.Team[i].ID = req[i].Id
-			team.Team[i].AccountId = req[i].AccountId
-			team.Team[i].TeamName = req[i].Team
+		if len(req.Team) != 5 {
+			s.error(w, r, http.StatusBadRequest, fmt.Errorf("len of team err"))
+			return
 		}
 
+		for i := 0; i < 5; i++ {
+			team.Team[i].PlayerCard = req.Team[i]
+		}
 		u := r.Context().Value(cxtKeyUser).(*models.User)
+		u.Teams = append(u.Teams, *team)
 
 		if err := s.Store.User().ReplaseUser(u); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
