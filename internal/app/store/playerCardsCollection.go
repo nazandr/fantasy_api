@@ -49,6 +49,16 @@ func (c *PlayerCardsCollection) GetAll() ([]models.PlayerCard, error) {
 	return playersList, nil
 }
 
+func (c *PlayerCardsCollection) IsTeam(teamName string) bool {
+	res := c.Collection.FindOne(c.Store.context, bson.M{"team": teamName})
+	player := models.NewPlayerCard()
+	if err := res.Decode(player); err != nil {
+		return false
+	}
+	return true
+
+}
+
 func (c *PlayerCardsCollection) OpenCommonPack() (*Pack, error) {
 	it := []int{0, 1, 2, 3}
 	w := []float32{0.7, 0.23, 0.05, 0.2}

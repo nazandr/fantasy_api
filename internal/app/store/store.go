@@ -13,8 +13,7 @@ type Store struct {
 	db                    *mongo.Database
 	userCollection        *UserCollection
 	playerCardsCollection *PlayerCardsCollection
-	buffsCollection       *BuffsCollection
-	matchCollection       *MatchCollection
+	seriesCollection      *SeriesCollection
 }
 
 func New(c *Config) *Store {
@@ -71,26 +70,15 @@ func (s *Store) PlayerCards() *PlayerCardsCollection {
 	return s.playerCardsCollection
 }
 
-func (s *Store) Buffs() *BuffsCollection {
-	if s.buffsCollection != nil {
-		return s.buffsCollection
+func (s *Store) Series() *SeriesCollection {
+	if s.seriesCollection != nil {
+		return s.seriesCollection
 	}
 
-	s.buffsCollection = &BuffsCollection{
+	s.seriesCollection = &SeriesCollection{
 		Store:      s,
-		Collection: s.db.Collection("card_buffs"),
-	}
-	return s.buffsCollection
-}
-
-func (s *Store) Matches() *MatchCollection {
-	if s.matchCollection != nil {
-		return s.matchCollection
+		Collection: s.db.Collection("series"),
 	}
 
-	s.matchCollection = &MatchCollection{
-		Store:      s,
-		Collection: s.db.Collection("matches"),
-	}
-	return s.matchCollection
+	return s.seriesCollection
 }

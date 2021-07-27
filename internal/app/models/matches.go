@@ -2,12 +2,21 @@ package models
 
 import (
 	"encoding/json"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+type Series struct {
+	ID       primitive.ObjectID `bson:"_id" json:"_id"`
+	Teams    []string           `bson:"teams" json:"teams"`
+	Date     time.Time          `bson:"date"`
+	SeriesId int64              `bson:"series_id"`
+	Matches  []Match
+}
 
 type Match struct {
 	ID      primitive.ObjectID `bson:"_id" json:"_id"`
@@ -66,11 +75,20 @@ type match struct {
 	Players []player `json:"players"`
 }
 
+func NewSeries() *Series {
+	return &Series{
+		ID:       primitive.NewObjectID(),
+		Teams:    []string{},
+		Date:     time.Time{},
+		SeriesId: 0,
+		Matches:  []Match{},
+	}
+}
+
 func NewMatch() *Match {
 	return &Match{
 		ID:      primitive.NewObjectID(),
 		Date:    time.Now(),
-		Teams:   make([]string, 2),
 		MatchID: 0,
 		Points:  make([]Points, 10),
 	}
@@ -113,6 +131,7 @@ func (m *Match) CalcPoints(matchID int64) {
 			m.Points[i].RoshanKils) + m.Points[i].Participation + m.Points[i].Observers +
 			m.Points[i].CampStacked + m.Points[i].Runs + float32(m.Points[i].FirsBlood) +
 			m.Points[i].Stuns)
+		m.Points[i].Total = float32(math.Round(float64(m.Points[i].Total*100)) / 100)
 	}
 }
 

@@ -45,10 +45,10 @@ func (s *APIServer) configureRouter() {
 	auth.HandleFunc("/disenchant", s.disenchant()).Methods("POST")
 	auth.HandleFunc("/setFantasyTeam", s.setFantacyTeam()).Methods("POST")
 	auth.HandleFunc("fantacyTeamsCollection", s.fantacyTeamsCollection()).Methods("GET")
+	auth.HandleFunc("/addCardsPack", s.addCardsPacks()).Methods("POST")
 
 	admin := s.router.PathPrefix("/admin").Subrouter()
 	admin.Use(s.admin)
-	admin.HandleFunc("/addCardsPack", s.addCardsPacks()).Methods("POST")
 }
 
 func (s *APIServer) setRequestId(next http.Handler) http.Handler {
@@ -109,6 +109,16 @@ func (s *APIServer) verify() http.HandlerFunc {
 				s.error(w, r, http.StatusUnauthorized, errExpiredRefreshToken)
 				return
 			}
+		}
+		u, err := s.Store.User().Find(id)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+		token.Auth(u.ID, s.config)
+		if err := s.Store.User().UpdateRefreshToken(u.ID, token.RefreshToken, s.config.RefreshTokenExp); err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
 		}
 		s.respond(w, r, http.StatusOK, token)
 	}
@@ -250,17 +260,14 @@ func (s *APIServer) handelSingIn() http.HandlerFunc {
 
 func (s *APIServer) addCardsPacks() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := &models.PacksCount{}
-		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
+		u := r.Context().Value(cxtKeyUser).(*models.User)
+		if u.FantacyCoins < 1000 {
+			s.respond(w, r, http.StatusNotModified, nil)
 			return
 		}
 
-		u := r.Context().Value(cxtKeyUser).(*models.User)
-
-		u.Packs.Common += req.Common
-		u.Packs.Special += req.Special
-
+		u.FantacyCoins -= 1000
+		u.Packs.Common += 1
 		if err := s.Store.User().ReplaseUser(u); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
@@ -350,14 +357,18 @@ func (s *APIServer) userData() http.HandlerFunc {
 		u := r.Context().Value(cxtKeyUser).(*models.User)
 
 		for i := 0; i < len(u.Teams); i++ {
-			if u.Teams[i].Team[0].Points == 0.0 {
-				matches, err := s.Store.Matches().FindByDate(u.Teams[i].Date)
+			if !u.Teams[i].Calculated && !u.Teams[i].Date.UTC().Truncate(24*time.Hour).Equal(time.Now().UTC().Truncate(24*time.Hour)) {
+				series, err := s.Store.Series().FindByDate(u.Teams[i].Date)
 				if err != nil {
 					s.error(w, r, http.StatusBadRequest, err)
 					return
 				}
-				u.Teams[i].SetPoints(matches)
+				u.Teams[i].SetPoints(series)
+
+				u.Teams[i].Calculated = true
+
 			}
+
 		}
 		if err := s.Store.User().ReplaseUser(u); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
@@ -403,11 +414,14 @@ func (s *APIServer) disenchant() http.HandlerFunc {
 }
 
 func (s *APIServer) setFantacyTeam() http.HandlerFunc {
-	// todo: добавить проверку на уже существуют
 	type request struct {
 		Team []models.PlayerCard `json:"team"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
+		u := r.Context().Value(cxtKeyUser).(*models.User)
+		if u.Teams[len(u.Teams)-1].Date.Truncate(24*time.Hour) == time.Now().Truncate(24*time.Hour) {
+			s.respond(w, r, http.StatusOK, nil)
+		}
 		req := request{}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
@@ -422,7 +436,7 @@ func (s *APIServer) setFantacyTeam() http.HandlerFunc {
 		for i := 0; i < 5; i++ {
 			team.Team[i].PlayerCard = req.Team[i]
 		}
-		u := r.Context().Value(cxtKeyUser).(*models.User)
+
 		u.Teams = append(u.Teams, *team)
 
 		if err := s.Store.User().ReplaseUser(u); err != nil {
@@ -436,15 +450,23 @@ func (s *APIServer) setFantacyTeam() http.HandlerFunc {
 func (s *APIServer) fantacyTeamsCollection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := r.Context().Value(cxtKeyUser).(*models.User)
-		for _, v := range u.Teams {
-			if v.Team[0].Points == 0.0 {
-				matches, err := s.Store.Matches().FindByDate(v.Date)
+		for i := 0; i < len(u.Teams); i++ {
+			if !u.Teams[i].Calculated {
+				series, err := s.Store.Series().FindByDate(u.Teams[i].Date)
 				if err != nil {
 					s.error(w, r, http.StatusBadRequest, err)
 					return
 				}
-				v.SetPoints(matches)
+				u.Teams[i].SetPoints(series)
+
+				if !u.Teams[i].Date.UTC().Truncate(24 * time.Hour).Equal(time.Now().UTC().Truncate(24 * time.Hour)) {
+					u.Teams[i].Calculated = true
+				}
 			}
+		}
+		if err := s.Store.User().ReplaseUser(u); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
 		}
 		s.respond(w, r, http.StatusOK, u.Teams)
 	}

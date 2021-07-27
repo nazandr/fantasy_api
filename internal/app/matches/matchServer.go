@@ -2,25 +2,24 @@ package matches
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/nazandr/fantasy_api/internal/app/models"
 	"github.com/nazandr/fantasy_api/internal/app/server"
 	"github.com/nazandr/fantasy_api/internal/app/store"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+var (
+	tz = time.FixedZone("UTC+3", +3*60*60)
 )
 
 type MatchServer struct {
-	Tournaments tournaments
-	LastMatch   int64
-	Store       *store.Store
-	Server      *server.APIServer
-}
-
-type tournaments []struct {
-	Leagueid   int    `json:"leagueid"`
-	LeagueName string `json:"league_name"`
+	LastMatch int64
+	Store     *store.Store
+	Server    *server.APIServer
 }
 
 type match []struct {
@@ -30,27 +29,24 @@ type match []struct {
 	DireName    string `json:"dire_name"`
 	Leagueid    int    `json:"leagueid"`
 	LeagueName  string `json:"league_name"`
+	SeriesId    int64  `json:"series_id"`
 	RadiantWin  bool   `json:"radiant_win"`
 }
 
 func NewMatchServer(s *server.APIServer) *MatchServer {
 	return &MatchServer{
-		Tournaments: RefreshTournaments(),
-		Store:       s.Store,
-		Server:      s,
+		Store:  s.Store,
+		Server: s,
 	}
 }
 
 func (m *MatchServer) Ticker() {
-	m.Tournaments = RefreshTournaments()
-	m.Server.Logger.Info("refreshed")
 	if err := m.Serve(); err != nil {
 		m.Server.Logger.Info(err)
 	}
 	m.Server.Logger.Info("served")
 	ticker := time.NewTicker(1 * time.Hour)
 	for range ticker.C {
-		m.Tournaments = RefreshTournaments()
 		if err := m.Serve(); err != nil {
 			m.Server.Logger.Info(err)
 		}
@@ -67,29 +63,62 @@ func (m *MatchServer) Serve() error {
 		return err
 	}
 
-	for i := 0; i < 15; i++ {
-		if matches[i].MatchID == m.LastMatch {
-			break
+	for i := 0; i < len(matches); i++ {
+		t := parseTime(matches[i].StartTime).In(tz)
+		// m.Server.Logger.Info(m.Store.PlayerCards().IsTeam(matches[i].RadiantName))
+		// m.Server.Logger.Info(matches[i].RadiantName)
+		// m.Server.Logger.Info(m.Store.PlayerCards().IsTeam(matches[i].DireName))
+		// m.Server.Logger.Info(matches[i].DireName)
+		if !m.Store.PlayerCards().IsTeam(matches[i].RadiantName) && !m.Store.PlayerCards().IsTeam(matches[i].DireName) {
+			continue
 		}
-		for _, v := range m.Tournaments {
-			if v.Leagueid == matches[i].Leagueid {
-				newMatch := models.NewMatch()
-				newMatch.CalcPoints(matches[i].MatchID)
-				if err := m.Store.Matches().Create(newMatch); err != nil {
-					return err
-				}
+
+		series, err := m.Store.Series().FindSeries(matches[i].SeriesId)
+		if err == mongo.ErrNoDocuments {
+			ser := models.NewSeries()
+			ser.Teams = append(ser.Teams, matches[i].RadiantName)
+			ser.Teams = append(ser.Teams, matches[i].DireName)
+			ser.Date = t
+			ser.SeriesId = matches[i].SeriesId
+			newMatch := models.NewMatch()
+			newMatch.Teams = append(newMatch.Teams, matches[i].RadiantName)
+			newMatch.Teams = append(newMatch.Teams, matches[i].DireName)
+			newMatch.CalcPoints(matches[i].MatchID)
+			ser.Matches = append(ser.Matches, *newMatch)
+
+			if err := m.Store.Series().Create(ser); err != nil {
+				return err
+			}
+			continue
+		} else if err != nil {
+			return err
+		}
+
+		st := false
+		for _, v := range series.Matches {
+			if v.MatchID == matches[i].MatchID {
+				st = true
 			}
 		}
+		if !st {
+			newMatch := models.NewMatch()
+			newMatch.Teams = append(newMatch.Teams, matches[i].RadiantName)
+			newMatch.Teams = append(newMatch.Teams, matches[i].DireName)
+			newMatch.CalcPoints(matches[i].MatchID)
+			series.Matches = append(series.Matches, *newMatch)
+			if err := m.Store.Series().UpdateSeries(series); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	return nil
 }
 
-func RefreshTournaments() tournaments {
-	file, _ := ioutil.ReadFile("configs/tournaments.json")
-	t := tournaments{}
-	json.Unmarshal([]byte(file), &t)
-	return t
+func parseTime(unix int) time.Time {
+	i, _ := strconv.ParseInt(strconv.Itoa(unix), 10, 64)
+	return time.Unix(i, 0)
 }
 
 func request(url string, method string) (*http.Response, error) {
