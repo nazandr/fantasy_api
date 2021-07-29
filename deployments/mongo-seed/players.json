@@ -1,0 +1,810 @@
+{
+    "_id": {
+        "$oid": "610299a8bd638b8d3afb6d1b"
+    },
+    "account_id": 56351509,
+    "name": "DM",
+    "fantasy_role": 1,
+    "team": "Virtus.pro"
+}
+{
+    "_id": {
+        "$oid": "610299a8bd638b8d3afb6d1d"
+    },
+    "account_id": 113331514,
+    "name": "Miposhka",
+    "fantasy_role": 2,
+    "team": "Team Spirit"
+}
+{
+    "_id": {
+        "$oid": "610299a8bd638b8d3afb6d1e"
+    },
+    "account_id": 124801257,
+    "name": "Nightfall",
+    "fantasy_role": 1,
+    "team": "Virtus.pro"
+}
+{
+    "_id": {
+        "$oid": "610299a8bd638b8d3afb6d1f"
+    },
+    "account_id": 187758589,
+    "name": "Kingslayer",
+    "fantasy_role": 2,
+    "team": "Virtus.pro"
+}
+{
+    "_id": {
+        "$oid": "610299a8bd638b8d3afb6d20"
+    },
+    "account_id": 256156323,
+    "name": "Mira",
+    "fantasy_role": 2,
+    "team": "Team Spirit"
+}
+{
+    "_id": {
+        "$oid": "610299a8bd638b8d3afb6d21"
+    },
+    "account_id": 302214028,
+    "name": "Collapse",
+    "fantasy_role": 1,
+    "team": "Team Spirit"
+}
+{
+    "_id": {
+        "$oid": "610299a8bd638b8d3afb6d22"
+    },
+    "account_id": 317880638,
+    "name": "Save-",
+    "fantasy_role": 2,
+    "team": "Virtus.pro"
+}
+{
+    "_id": {
+        "$oid": "610299a8bd638b8d3afb6d23"
+    },
+    "account_id": 321580662,
+    "name": "Yatoro",
+    "fantasy_role": 1,
+    "team": "Team Spirit"
+}
+{
+    "_id": {
+        "$oid": "610299a8bd638b8d3afb6d24"
+    },
+    "account_id": 431770905,
+    "name": "TORONTOTOKYO",
+    "fantasy_role": 4,
+    "team": "Team Spirit"
+}
+{
+    "_id": {
+        "$oid": "610299a8bd638b8d3afb6d25"
+    },
+    "account_id": 480412663,
+    "name": "gpk~",
+    "fantasy_role": 4,
+    "team": "Virtus.pro"
+}
+{
+    "_id": {
+        "$oid": "610299b8eeca37215cccb81f"
+    },
+    "account_id": 25907144,
+    "name": "Cr1t-",
+    "fantasy_role": 2,
+    "team": "Evil Geniuses"
+}
+{
+    "_id": {
+        "$oid": "610299b8eeca37215cccb820"
+    },
+    "account_id": 84772440,
+    "name": "iceiceice",
+    "fantasy_role": 1,
+    "team": "Evil Geniuses"
+}
+{
+    "_id": {
+        "$oid": "610299b8eeca37215cccb821"
+    },
+    "account_id": 86745912,
+    "name": "Arteezy",
+    "fantasy_role": 1,
+    "team": "Evil Geniuses"
+}
+{
+    "_id": {
+        "$oid": "610299b8eeca37215cccb822"
+    },
+    "account_id": 94155156,
+    "name": "Fly",
+    "fantasy_role": 2,
+    "team": "Evil Geniuses"
+}
+{
+    "_id": {
+        "$oid": "610299b8eeca37215cccb823"
+    },
+    "account_id": 111114687,
+    "name": "y`",
+    "fantasy_role": 2,
+    "team": "PSG.LGD"
+}
+{
+    "_id": {
+        "$oid": "610299b8eeca37215cccb824"
+    },
+    "account_id": 118134220,
+    "name": "Faith_bian",
+    "fantasy_role": 1,
+    "team": "PSG.LGD"
+}
+{
+    "_id": {
+        "$oid": "610299b8eeca37215cccb825"
+    },
+    "account_id": 154715080,
+    "name": "Abed",
+    "fantasy_role": 4,
+    "team": "Evil Geniuses"
+}
+{
+    "_id": {
+        "$oid": "610299b8eeca37215cccb826"
+    },
+    "account_id": 157475523,
+    "name": "XinQ",
+    "fantasy_role": 2,
+    "team": "PSG.LGD"
+}
+{
+    "_id": {
+        "$oid": "610299b8eeca37215cccb827"
+    },
+    "account_id": 173978074,
+    "name": "NothingToSay",
+    "fantasy_role": 4,
+    "team": "PSG.LGD"
+}
+{
+    "_id": {
+        "$oid": "610299b8eeca37215cccb828"
+    },
+    "account_id": 898754153,
+    "name": "Ame",
+    "fantasy_role": 1,
+    "team": "PSG.LGD"
+}
+{
+    "_id": {
+        "$oid": "61029a6ed709a430b24c2752"
+    },
+    "account_id": 12231202,
+    "name": "LIMMP",
+    "fantasy_role": 4,
+    "team": "Alliance"
+}
+{
+    "_id": {
+        "$oid": "61029a6ed709a430b24c2753"
+    },
+    "account_id": 18180970,
+    "name": "Handsken",
+    "fantasy_role": 2,
+    "team": "Alliance"
+}
+{
+    "_id": {
+        "$oid": "61029a6ed709a430b24c2754"
+    },
+    "account_id": 19672354,
+    "name": "N0tail",
+    "fantasy_role": 2,
+    "team": "OG"
+}
+{
+    "_id": {
+        "$oid": "61029a6ed709a430b24c2756"
+    },
+    "account_id": 41231571,
+    "name": "s4",
+    "fantasy_role": 1,
+    "team": "Alliance"
+}
+{
+    "_id": {
+        "$oid": "61029a6ed709a430b24c2758"
+    },
+    "account_id": 88271237,
+    "name": "Ceb",
+    "fantasy_role": 1,
+    "team": "OG"
+}
+{
+    "_id": {
+        "$oid": "61029a6ed709a430b24c2759"
+    },
+    "account_id": 94049589,
+    "name": "Fng",
+    "fantasy_role": 2,
+    "team": "Alliance"
+}
+{
+    "_id": {
+        "$oid": "61029a6ed709a430b24c275a"
+    },
+    "account_id": 94054712,
+    "name": "Topson",
+    "fantasy_role": 4,
+    "team": "OG"
+}
+{
+    "_id": {
+        "$oid": "61029a6ed709a430b24c275b"
+    },
+    "account_id": 103735745,
+    "name": "Saksa",
+    "fantasy_role": 2,
+    "team": "OG"
+}
+{
+    "_id": {
+        "$oid": "61029a6ed709a430b24c275c"
+    },
+    "account_id": 111620041,
+    "name": "SumaiL",
+    "fantasy_role": 1,
+    "team": "OG"
+}
+{
+    "_id": {
+        "$oid": "61029a6ed709a430b24c275e"
+    },
+    "account_id": 412753955,
+    "name": "Nikobaby",
+    "fantasy_role": 1,
+    "team": "Alliance"
+}
+{
+    "_id": {
+        "$oid": "61029d9e5371be1413982faa"
+    },
+    "account_id": 47434686,
+    "name": "SVG",
+    "fantasy_role": 2,
+    "team": "Quincy Crew"
+}
+{
+    "_id": {
+        "$oid": "61029d9e5371be1413982fab"
+    },
+    "account_id": 86726887,
+    "name": "MSS",
+    "fantasy_role": 2,
+    "team": "Quincy Crew"
+}
+{
+    "_id": {
+        "$oid": "61029d9e5371be1413982fac"
+    },
+    "account_id": 87063175,
+    "name": "Lelis",
+    "fantasy_role": 1,
+    "team": "Quincy Crew"
+}
+{
+    "_id": {
+        "$oid": "61029d9e5371be1413982fad"
+    },
+    "account_id": 108452107,
+    "name": "YawaR",
+    "fantasy_role": 1,
+    "team": "Quincy Crew"
+}
+{
+    "_id": {
+        "$oid": "61029d9e5371be1413982fae"
+    },
+    "account_id": 221666230,
+    "name": "Quinn",
+    "fantasy_role": 4,
+    "team": "Quincy Crew"
+}
+{
+    "_id": {
+        "$oid": "61029f4b5db0b29e6c61eb8b"
+    },
+    "account_id": 101259972,
+    "name": "Oli~",
+    "fantasy_role": 2,
+    "team": "Invictus Gaming"
+}
+{
+    "_id": {
+        "$oid": "61029f4b5db0b29e6c61eb8d"
+    },
+    "account_id": 138857296,
+    "name": "JT-",
+    "fantasy_role": 1,
+    "team": "Invictus Gaming"
+}
+{
+    "_id": {
+        "$oid": "61029f4b5db0b29e6c61eb8e"
+    },
+    "account_id": 139876032,
+    "name": "kaka",
+    "fantasy_role": 2,
+    "team": "Invictus Gaming"
+}
+{
+    "_id": {
+        "$oid": "61029f4b5db0b29e6c61eb8f"
+    },
+    "account_id": 168028715,
+    "name": "flyfly",
+    "fantasy_role": 1,
+    "team": "Invictus Gaming"
+}
+{
+    "_id": {
+        "$oid": "61029f4b5db0b29e6c61eb90"
+    },
+    "account_id": 202217968,
+    "name": "Emo",
+    "fantasy_role": 4,
+    "team": "Invictus Gaming"
+}
+{
+    "_id": {
+        "$oid": "61029fd6a90d21aed9480c40"
+    },
+    "account_id": 119631156,
+    "name": "StingeR",
+    "fantasy_role": 2,
+    "team": "beastcoast"
+}
+{
+    "_id": {
+        "$oid": "61029fd6a90d21aed9480c41"
+    },
+    "account_id": 153836240,
+    "name": "Chris luck",
+    "fantasy_role": 4,
+    "team": "beastcoast"
+}
+{
+    "_id": {
+        "$oid": "61029fd6a90d21aed9480c42"
+    },
+    "account_id": 157989498,
+    "name": "Scofield",
+    "fantasy_role": 2,
+    "team": "beastcoast"
+}
+{
+    "_id": {
+        "$oid": "61029fd6a90d21aed9480c43"
+    },
+    "account_id": 164685175,
+    "name": "K1  ",
+    "fantasy_role": 1,
+    "team": "beastcoast"
+}
+{
+    "_id": {
+        "$oid": "61029fd6a90d21aed9480c45"
+    },
+    "account_id": 292921272,
+    "name": "Wisper",
+    "fantasy_role": 1,
+    "team": "beastcoast"
+}
+{
+    "_id": {
+        "$oid": "6102a0ac7d70d00250193b96"
+    },
+    "account_id": 38628747,
+    "name": "MoonMeander",
+    "fantasy_role": 2,
+    "team": "Undying"
+}
+{
+    "_id": {
+        "$oid": "6102a0ac7d70d00250193b97"
+    },
+    "account_id": 97658618,
+    "name": "Timado",
+    "fantasy_role": 1,
+    "team": "Undying"
+}
+{
+    "_id": {
+        "$oid": "6102a0ac7d70d00250193b98"
+    },
+    "account_id": 126212866,
+    "name": "SabeRLighT",
+    "fantasy_role": 1,
+    "team": "Undying"
+}
+{
+    "_id": {
+        "$oid": "6102a0ac7d70d00250193b99"
+    },
+    "account_id": 145550466,
+    "name": "DuBu",
+    "fantasy_role": 2,
+    "team": "Undying"
+}
+{
+    "_id": {
+        "$oid": "6102a0ac7d70d00250193b9a"
+    },
+    "account_id": 238239590,
+    "name": "Bryle",
+    "fantasy_role": 4,
+    "team": "Undying"
+}
+{
+    "_id": {
+        "$oid": "6102a1195c9e5f6d2aa67421"
+    },
+    "account_id": 94281932,
+    "name": "Karl",
+    "fantasy_role": 4,
+    "team": "T1"
+}
+{
+    "_id": {
+        "$oid": "6102a1195c9e5f6d2aa67422"
+    },
+    "account_id": 121404228,
+    "name": "Xepher",
+    "fantasy_role": 2,
+    "team": "T1"
+}
+{
+    "_id": {
+        "$oid": "6102a1195c9e5f6d2aa67423"
+    },
+    "account_id": 136829091,
+    "name": "Whitemon",
+    "fantasy_role": 2,
+    "team": "T1"
+}
+{
+    "_id": {
+        "$oid": "6102a1195c9e5f6d2aa67424"
+    },
+    "account_id": 184950344,
+    "name": "KuKu",
+    "fantasy_role": 1,
+    "team": "T1"
+}
+{
+    "_id": {
+        "$oid": "6102a1195c9e5f6d2aa67425"
+    },
+    "account_id": 375507918,
+    "name": "23savage",
+    "fantasy_role": 1,
+    "team": "T1"
+}
+{
+    "_id": {
+        "$oid": "6102a1bacc93e567f3e8fb74"
+    },
+    "account_id": 107803494,
+    "name": "Ori",
+    "fantasy_role": 4,
+    "team": "Vici Gaming"
+}
+{
+    "_id": {
+        "$oid": "6102a1bacc93e567f3e8fb75"
+    },
+    "account_id": 134276083,
+    "name": "old eLeVeN",
+    "fantasy_role": 1,
+    "team": "Vici Gaming"
+}
+{
+    "_id": {
+        "$oid": "6102a1bacc93e567f3e8fb76"
+    },
+    "account_id": 138543123,
+    "name": "Pyw",
+    "fantasy_role": 2,
+    "team": "Vici Gaming"
+}
+{
+    "_id": {
+        "$oid": "6102a1bacc93e567f3e8fb77"
+    },
+    "account_id": 143693439,
+    "name": "Dy",
+    "fantasy_role": 2,
+    "team": "Vici Gaming"
+}
+{
+    "_id": {
+        "$oid": "6102a1bacc93e567f3e8fb78"
+    },
+    "account_id": 277141004,
+    "name": "poyoyo",
+    "fantasy_role": 1,
+    "team": "Vici Gaming"
+}
+{
+    "_id": {
+        "$oid": "6102a24fb8012d4f3f193e71"
+    },
+    "account_id": 81306398,
+    "name": "KJ",
+    "fantasy_role": 2,
+    "team": "SG e-sports"
+}
+{
+    "_id": {
+        "$oid": "6102a24fb8012d4f3f193e72"
+    },
+    "account_id": 85937380,
+    "name": "4dr",
+    "fantasy_role": 4,
+    "team": "SG e-sports"
+}
+{
+    "_id": {
+        "$oid": "6102a24fb8012d4f3f193e73"
+    },
+    "account_id": 86822085,
+    "name": "Costabile",
+    "fantasy_role": 1,
+    "team": "SG e-sports"
+}
+{
+    "_id": {
+        "$oid": "6102a24fb8012d4f3f193e74"
+    },
+    "account_id": 105045291,
+    "name": "Thiolicor",
+    "fantasy_role": 2,
+    "team": "SG e-sports"
+}
+{
+    "_id": {
+        "$oid": "6102a24fb8012d4f3f193e75"
+    },
+    "account_id": 117956848,
+    "name": "tavo",
+    "fantasy_role": 1,
+    "team": "SG e-sports"
+}
+{
+    "_id": {
+        "$oid": "6103163278132dd5af5dcce2"
+    },
+    "account_id": 72312627,
+    "name": "MATUMBAMAN",
+    "fantasy_role": 1,
+    "team": "Team Secret"
+}
+{
+    "_id": {
+        "$oid": "6103163278132dd5af5dcce3"
+    },
+    "account_id": 73562326,
+    "name": "zai",
+    "fantasy_role": 1,
+    "team": "Team Secret"
+}
+{
+    "_id": {
+        "$oid": "6103163278132dd5af5dcce4"
+    },
+    "account_id": 87278757,
+    "name": "Puppey",
+    "fantasy_role": 2,
+    "team": "Team Secret"
+}
+{
+    "_id": {
+        "$oid": "6103163278132dd5af5dcce5"
+    },
+    "account_id": 89117038,
+    "name": "YapzOr",
+    "fantasy_role": 2,
+    "team": "Team Secret"
+}
+{
+    "_id": {
+        "$oid": "6103163278132dd5af5dcce6"
+    },
+    "account_id": 121769650,
+    "name": "Nisha",
+    "fantasy_role": 4,
+    "team": "Team Secret"
+}
+{
+    "_id": {
+        "$oid": "61031683d9845ab9864ec5db"
+    },
+    "account_id": 89423756,
+    "name": "LaNm",
+    "fantasy_role": 2,
+    "team": "Team Aster"
+}
+{
+    "_id": {
+        "$oid": "61031683d9845ab9864ec5dd"
+    },
+    "account_id": 129958758,
+    "name": "Xxs",
+    "fantasy_role": 1,
+    "team": "Team Aster"
+}
+{
+    "_id": {
+        "$oid": "61031683d9845ab9864ec5df"
+    },
+    "account_id": 148215639,
+    "name": "Monet",
+    "fantasy_role": 1,
+    "team": "Team Aster"
+}
+{
+    "_id": {
+        "$oid": "61031683d9845ab9864ec5e2"
+    },
+    "account_id": 207829314,
+    "name": "Borax",
+    "fantasy_role": 2,
+    "team": "Team Aster"
+}
+{
+    "_id": {
+        "$oid": "61031683d9845ab9864ec5e3"
+    },
+    "account_id": 373520478,
+    "name": "White丶Album_白学家",
+    "fantasy_role": 4,
+    "team": "Team Aster"
+}
+{
+    "_id": {
+        "$oid": "610317d0872aea7eade7c5d2"
+    },
+    "account_id": 59463394,
+    "name": "Leostyle- ",
+    "fantasy_role": 4,
+    "team": "Thunder Predator"
+}
+{
+    "_id": {
+        "$oid": "610317d0872aea7eade7c5d3"
+    },
+    "account_id": 95825708,
+    "name": "MNZ",
+    "fantasy_role": 1,
+    "team": "Thunder Predator"
+}
+{
+    "_id": {
+        "$oid": "610317d0872aea7eade7c5d5"
+    },
+    "account_id": 186837494,
+    "name": "Mjz",
+    "fantasy_role": 2,
+    "team": "Thunder Predator"
+}
+{
+    "_id": {
+        "$oid": "610317d0872aea7eade7c5d6"
+    },
+    "account_id": 349310876,
+    "name": "MoOz",
+    "fantasy_role": 2,
+    "team": "Thunder Predator"
+}
+{
+    "_id": {
+        "$oid": "610317d0872aea7eade7c5d7"
+    },
+    "account_id": 407321629,
+    "name": "Frank",
+    "fantasy_role": 1,
+    "team": "Thunder Predator"
+}
+{
+    "_id": {
+        "$oid": "61031831fb735a5ed95d3858"
+    },
+    "account_id": 90882159,
+    "name": "Super！",
+    "fantasy_role": 2,
+    "team": "Elephant"
+}
+{
+    "_id": {
+        "$oid": "61031831fb735a5ed95d3859"
+    },
+    "account_id": 101695162,
+    "name": "fy",
+    "fantasy_role": 2,
+    "team": "Elephant"
+}
+{
+    "_id": {
+        "$oid": "61031831fb735a5ed95d385a"
+    },
+    "account_id": 106863163,
+    "name": "Somnus丶M",
+    "fantasy_role": 4,
+    "team": "Elephant"
+}
+{
+    "_id": {
+        "$oid": "61031831fb735a5ed95d385b"
+    },
+    "account_id": 137193239,
+    "name": "eurus",
+    "fantasy_role": 1,
+    "team": "Elephant"
+}
+{
+    "_id": {
+        "$oid": "61031831fb735a5ed95d385c"
+    },
+    "account_id": 139937922,
+    "name": "Yang",
+    "fantasy_role": 1,
+    "team": "Elephant"
+}
+{
+    "_id": {
+        "$oid": "6103187078bc3ffde50467da"
+    },
+    "account_id": 99983413,
+    "name": "Deth",
+    "fantasy_role": 1,
+    "team": "Fnatic"
+}
+{
+    "_id": {
+        "$oid": "6103187078bc3ffde50467db"
+    },
+    "account_id": 100471531,
+    "name": "jabz",
+    "fantasy_role": 2,
+    "team": "Fnatic"
+}
+{
+    "_id": {
+        "$oid": "6103187078bc3ffde50467dd"
+    },
+    "account_id": 102099826,
+    "name": "DJ",
+    "fantasy_role": 2,
+    "team": "Fnatic"
+}
+{
+    "_id": {
+        "$oid": "6103187078bc3ffde50467de"
+    },
+    "account_id": 113435203,
+    "name": "ChYuaN",
+    "fantasy_role": 1,
+    "team": "Fnatic"
+}
+{
+    "_id": {
+        "$oid": "6103187078bc3ffde50467df"
+    },
+    "account_id": 132309493,
+    "name": "Raven",
+    "fantasy_role": 1,
+    "team": "Fnatic"
+}

@@ -17,11 +17,19 @@ services:
       retries: 3
     restart: unless-stopped
 
+  mongo_seed:
+    build: 
+      context: ./mongo-seed
+      dockerfile: ./Dockerfile
+    links:
+      - mongodb
+    networks:
+      - mongodb_network
+
   fantasyapi:
     image: fantasyapi
     build:
-      context: .
-      dockerfile: ./Dockerfile
+      context: ..
     ports:
       - 8080:8080
     depends_on:
