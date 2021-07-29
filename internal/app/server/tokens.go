@@ -1,7 +1,6 @@
 package server
 
 import (
-	"errors"
 	"fmt"
 	"math/rand"
 	"time"
@@ -14,10 +13,6 @@ type Token struct {
 	AcssesToken  string `json:"acsses_token"`
 	RefreshToken string `json:"refresh_token"`
 }
-
-var (
-	errTokenInvalid = errors.New("token invalid")
-)
 
 func NewToken() *Token {
 	return &Token{

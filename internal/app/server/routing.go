@@ -26,6 +26,8 @@ var (
 	errIncorectEmailOrPassword = errors.New("incorect email or password")
 	errExpiredRefreshToken     = errors.New("expired refresh token")
 	errNoPacks                 = errors.New("user dosn`t have packs")
+
+	tz = time.FixedZone("UTC+3", +3*60*60)
 )
 
 type cxtKey int
@@ -269,7 +271,7 @@ func (s *APIServer) addCardsPacks() http.HandlerFunc {
 		u.FantacyCoins -= 1000
 		u.Packs.Common += 1
 		if err := s.Store.User().ReplaseUser(u); err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
+			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
 		s.respond(w, r, http.StatusOK, nil)
@@ -357,7 +359,7 @@ func (s *APIServer) userData() http.HandlerFunc {
 		u := r.Context().Value(cxtKeyUser).(*models.User)
 
 		for i := 0; i < len(u.Teams); i++ {
-			if !u.Teams[i].Calculated && !u.Teams[i].Date.UTC().Truncate(24*time.Hour).Equal(time.Now().UTC().Truncate(24*time.Hour)) {
+			if !u.Teams[i].Calculated && !u.Teams[i].Date.In(tz).Truncate(24*time.Hour).Equal(time.Now().In(tz).Truncate(24*time.Hour)) {
 				series, err := s.Store.Series().FindByDate(u.Teams[i].Date)
 				if err != nil {
 					s.error(w, r, http.StatusBadRequest, err)
@@ -450,8 +452,9 @@ func (s *APIServer) setFantacyTeam() http.HandlerFunc {
 func (s *APIServer) fantacyTeamsCollection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := r.Context().Value(cxtKeyUser).(*models.User)
+
 		for i := 0; i < len(u.Teams); i++ {
-			if !u.Teams[i].Calculated {
+			if !u.Teams[i].Calculated && !u.Teams[i].Date.In(tz).Truncate(24*time.Hour).Equal(time.Now().In(tz).Truncate(24*time.Hour)) {
 				series, err := s.Store.Series().FindByDate(u.Teams[i].Date)
 				if err != nil {
 					s.error(w, r, http.StatusBadRequest, err)
@@ -459,10 +462,10 @@ func (s *APIServer) fantacyTeamsCollection() http.HandlerFunc {
 				}
 				u.Teams[i].SetPoints(series)
 
-				if !u.Teams[i].Date.UTC().Truncate(24 * time.Hour).Equal(time.Now().UTC().Truncate(24 * time.Hour)) {
-					u.Teams[i].Calculated = true
-				}
+				u.Teams[i].Calculated = true
+
 			}
+
 		}
 		if err := s.Store.User().ReplaseUser(u); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)

@@ -88,8 +88,5 @@ func (c *PlayerCardsCollection) OpenCommonPack() (*Pack, error) {
 		p.Cards[n].Buffs = buffs
 	}
 
-	// i := reflect.ValueOf(fp).Elem().FieldByName(n.NameOfFild).Float()
-	// fmt.Println(i * float64(n.Multiplaier))
-
 	return p, nil
 }

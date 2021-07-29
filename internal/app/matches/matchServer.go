@@ -65,10 +65,6 @@ func (m *MatchServer) Serve() error {
 
 	for i := 0; i < len(matches); i++ {
 		t := parseTime(matches[i].StartTime).In(tz)
-		// m.Server.Logger.Info(m.Store.PlayerCards().IsTeam(matches[i].RadiantName))
-		// m.Server.Logger.Info(matches[i].RadiantName)
-		// m.Server.Logger.Info(m.Store.PlayerCards().IsTeam(matches[i].DireName))
-		// m.Server.Logger.Info(matches[i].DireName)
 		if !m.Store.PlayerCards().IsTeam(matches[i].RadiantName) && !m.Store.PlayerCards().IsTeam(matches[i].DireName) {
 			continue
 		}

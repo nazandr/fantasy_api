@@ -8,6 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+var TZ = time.FixedZone("UTC+3", +3*60*60)
+
 type SeriesCollection struct {
 	Store      *Store
 	Collection *mongo.Collection
@@ -69,7 +71,7 @@ func (c *SeriesCollection) GetAll() ([]models.Series, error) {
 }
 
 func (c *SeriesCollection) FindByDate(data time.Time) ([]models.Series, error) {
-	gd := data.Truncate(24 * time.Hour)
+	gd := data.Truncate(24 * time.Hour).In(TZ)
 	t := time.Date(data.Year(), data.Month(), data.Day(), 23, 59, 59, data.Nanosecond(), data.Location())
 	cursor, err := c.Collection.Find(c.Store.context, bson.M{"date": bson.M{"$gte": gd, "$lte": t}})
 	var series []models.Series
