@@ -421,8 +421,10 @@ func (s *APIServer) setFantacyTeam() http.HandlerFunc {
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := r.Context().Value(cxtKeyUser).(*models.User)
-		if u.Teams[len(u.Teams)-1].Date.Truncate(24*time.Hour) == time.Now().Truncate(24*time.Hour) {
-			s.respond(w, r, http.StatusOK, nil)
+		if len(u.Teams) != 0 {
+			if u.Teams[len(u.Teams)-1].Date.Truncate(24*time.Hour) == time.Now().Truncate(24*time.Hour) {
+				s.respond(w, r, http.StatusOK, nil)
+			}
 		}
 		req := request{}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

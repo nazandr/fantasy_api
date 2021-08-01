@@ -37,6 +37,14 @@ services:
     networks:
       - mongodb_network
     restart: always
+  
+  site:
+    image: nazandr/fantasysite
+    ports: 
+      - 3000:3000
+    networks:
+      - mongodb_network
+    restart: always
 
 volumes:
   mongodb-data:
